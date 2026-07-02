@@ -1,0 +1,189 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Station {
+  id        String      @id @default(uuid())
+  name      String
+  address   String?
+  isActive  Boolean     @default(true)
+  users     User[]
+  employees Employee[]
+  garments  Garment[]
+  operations Operation[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model User {
+  id           String           @id @default(uuid())
+  email        String           @unique
+  passwordHash String
+  fullName     String
+  role         UserRole
+  stationId    String?
+  station      Station?         @relation(fields: [stationId], references: [id])
+  isActive     Boolean          @default(true)
+  operations   Operation[]      @relation("OperationCreatedBy")
+  scans        OperationItem[]
+  history      GarmentHistory[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model Employee {
+  id         String         @id @default(uuid())
+  stationId  String
+  station    Station        @relation(fields: [stationId], references: [id])
+  fullName   String
+  position   String?
+  status     EmployeeStatus @default(active)
+  hireDate   DateTime?
+  firedDate  DateTime?
+  comment    String?
+  garments   Garment[]
+  operations Operation[]
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+}
+
+model GarmentType {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  isActive  Boolean   @default(true)
+  garments  Garment[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Garment {
+  id             String           @id @default(uuid())
+  barcode        String           @unique
+  stationId      String
+  station        Station          @relation(fields: [stationId], references: [id])
+  employeeId     String
+  employee       Employee         @relation(fields: [employeeId], references: [id])
+  garmentTypeId  String
+  garmentType    GarmentType      @relation(fields: [garmentTypeId], references: [id])
+  label          String?
+  status         GarmentStatus    @default(with_employee)
+  operationItems OperationItem[]
+  history        GarmentHistory[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model Operation {
+  id            String          @id @default(uuid())
+  stationId     String
+  station       Station         @relation(fields: [stationId], references: [id])
+  employeeId    String?
+  employee      Employee?       @relation(fields: [employeeId], references: [id])
+  type          OperationType
+  operationDate DateTime
+  actNumber     String?
+  status        OperationStatus @default(draft)
+  comment       String?
+  emailSentAt   DateTime?
+  createdById   String
+  createdBy     User            @relation("OperationCreatedBy", fields: [createdById], references: [id])
+  items         OperationItem[]
+  attachments   Attachment[]
+  history       GarmentHistory[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model OperationItem {
+  id              String        @id @default(uuid())
+  operationId     String
+  operation       Operation     @relation(fields: [operationId], references: [id], onDelete: Cascade)
+  garmentId       String
+  garment         Garment       @relation(fields: [garmentId], references: [id])
+  direction       ItemDirection
+  deductionAmount Decimal       @default(0)
+  scanTime        DateTime      @default(now())
+  scannedById     String
+  scannedBy       User          @relation(fields: [scannedById], references: [id])
+  comment         String?
+
+  @@unique([operationId, garmentId, direction])
+}
+
+model Attachment {
+  id          String         @id @default(uuid())
+  operationId String
+  operation   Operation      @relation(fields: [operationId], references: [id], onDelete: Cascade)
+  fileType    AttachmentType
+  fileName    String
+  filePath    String
+  mimeType    String?
+  sizeBytes   Int?
+  createdAt   DateTime       @default(now())
+}
+
+model GarmentHistory {
+  id          String     @id @default(uuid())
+  garmentId   String
+  garment     Garment    @relation(fields: [garmentId], references: [id])
+  operationId String?
+  operation   Operation? @relation(fields: [operationId], references: [id])
+  eventType   String
+  oldStatus   String?
+  newStatus   String?
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  comment     String?
+  createdAt   DateTime   @default(now())
+}
+
+enum UserRole {
+  admin
+  master
+}
+
+enum EmployeeStatus {
+  active
+  fired
+  archived
+}
+
+enum GarmentStatus {
+  with_employee
+  in_laundry
+  returned_after_firing
+  not_returned
+  unknown
+  archived
+}
+
+enum OperationType {
+  laundry
+  firing_return
+}
+
+enum OperationStatus {
+  draft
+  ready
+  sent
+  error
+  cancelled
+}
+
+enum ItemDirection {
+  received_from_laundry
+  sent_to_laundry
+  returned_after_firing
+  not_returned
+}
+
+enum AttachmentType {
+  act_photo
+  return_photo
+  excel_detail
+}

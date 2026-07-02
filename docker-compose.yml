@@ -1,0 +1,25 @@
+services:
+  app:
+    build: .
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    volumes:
+      - ./storage:/app/storage
+    ports:
+      - "3000:3000"
+
+  postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: workwear
+      POSTGRES_USER: workwear
+      POSTGRES_PASSWORD: change_me
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
