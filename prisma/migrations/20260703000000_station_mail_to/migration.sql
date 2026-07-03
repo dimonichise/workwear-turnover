@@ -1,0 +1,1 @@
+ALTER TABLE "Station" ADD COLUMN "mailTo" TEXT;

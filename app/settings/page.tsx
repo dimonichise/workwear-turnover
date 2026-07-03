@@ -23,6 +23,10 @@ export default async function SettingsPage() {
             <span>Адрес</span>
             <input name="address" />
           </label>
+          <label className="block space-y-1 text-sm">
+            <span>Почта для отчетов</span>
+            <input name="mailTo" type="email" placeholder="sto@example.com" />
+          </label>
           <button className="bg-brand text-white">Создать СТО</button>
         </form>
 
@@ -63,19 +67,37 @@ export default async function SettingsPage() {
           <button className="bg-brand text-white">Создать пользователя</button>
         </form>
       </section>
-      <section className="panel table-wrap">
-        <h2 className="p-4 text-lg font-bold">СТО</h2>
-        <table>
-          <tbody>
-            {stations.map((station) => (
-              <tr key={station.id}>
-                <td>{station.name}</td>
-                <td>{station.address}</td>
-                <td>{station.isActive ? "активна" : "неактивна"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <section className="space-y-3">
+        <h2 className="text-lg font-bold">СТО</h2>
+        <div className="grid gap-4 lg:grid-cols-2">
+          {stations.map((station) => (
+            <form key={station.id} action={`/api/stations/${station.id}`} method="post" className="panel space-y-3 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="font-bold">{station.name}</h3>
+                  <p className="text-sm text-slate-600">{station.isActive ? "активна" : "неактивна"}</p>
+                </div>
+                <label className="flex items-center gap-2 text-sm">
+                  <input name="isActive" type="checkbox" defaultChecked={station.isActive} className="w-auto" />
+                  Активна
+                </label>
+              </div>
+              <label className="block space-y-1 text-sm">
+                <span>Название</span>
+                <input name="name" defaultValue={station.name} required />
+              </label>
+              <label className="block space-y-1 text-sm">
+                <span>Адрес</span>
+                <input name="address" defaultValue={station.address || ""} />
+              </label>
+              <label className="block space-y-1 text-sm">
+                <span>Почта для отчетов</span>
+                <input name="mailTo" type="email" defaultValue={station.mailTo || ""} placeholder="Общая почта из .env" />
+              </label>
+              <button className="bg-panel">Сохранить СТО</button>
+            </form>
+          ))}
+        </div>
       </section>
       <section className="panel table-wrap">
         <h2 className="p-4 text-lg font-bold">Пользователи</h2>

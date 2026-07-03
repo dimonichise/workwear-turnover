@@ -32,6 +32,11 @@ textarea:focus {
   outline: none;
 }
 
+input[type="checkbox"] {
+  width: auto;
+  box-shadow: none;
+}
+
 button,
 .button {
   display: inline-flex;

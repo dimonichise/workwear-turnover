@@ -15,6 +15,8 @@ export async function sendOperationEmail(operationId: string) {
     operation.type === "laundry" ? ["excel_detail", "act_photo"] : ["excel_detail", "act_photo", "return_photo"];
   const missing = required.filter((type) => !operation.attachments.some((item) => item.fileType === type));
   if (missing.length) throw new Error(`Не хватает вложений: ${missing.join(", ")}`);
+  const recipient = operation.station.mailTo || process.env.MAIL_TO;
+  if (!recipient) throw new Error("Не настроена почта получателя для СТО");
 
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -26,7 +28,7 @@ export async function sendOperationEmail(operationId: string) {
   const subject = `${operation.station.name}_${operation.type === "laundry" ? "Стирка" : "Возврат"}_${fileDate(operation.operationDate)}`;
   await transporter.sendMail({
     from: process.env.SMTP_USER,
-    to: process.env.MAIL_TO || "25u@autopilot-sto.ru",
+    to: recipient,
     subject,
     text: `Документы по операции ${subject}`,
     attachments: await Promise.all(

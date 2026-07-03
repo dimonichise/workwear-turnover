@@ -18,7 +18,15 @@ export async function POST(req: NextRequest) {
   requireAdmin(user.role);
   if (req.headers.get("content-type")?.includes("application/json")) {
     const data = await req.json();
-    return NextResponse.json(await prisma.station.create({ data: { name: data.name, address: data.address } }));
+    return NextResponse.json(
+      await prisma.station.create({
+        data: {
+          name: data.name,
+          address: data.address,
+          mailTo: data.mailTo || null
+        }
+      })
+    );
   }
   const form = await req.formData();
   const name = String(form.get("name") || "").trim();
@@ -26,7 +34,8 @@ export async function POST(req: NextRequest) {
   await prisma.station.create({
     data: {
       name,
-      address: String(form.get("address") || "").trim() || null
+      address: String(form.get("address") || "").trim() || null,
+      mailTo: String(form.get("mailTo") || "").trim() || null
     }
   });
   return redirectTo("/settings");
