@@ -8,7 +8,14 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Оборот спецодежды",
   description: "Учёт оборота спецодежды по штрих-кодам",
-  manifest: "/manifest.webmanifest"
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/app-icon.svg", type: "image/svg+xml" }
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }]
+  }
 };
 
 export const viewport: Viewport = {
