@@ -50,12 +50,12 @@ export default async function OperationPage({ params }: { params: Promise<{ id: 
 
       {operation.type === "laundry" ? (
         <section className="grid gap-4 md:grid-cols-2">
-          <div className="panel space-y-4 p-4">
+          <div className="panel laundry-panel laundry-panel-received space-y-4 p-4">
             {editable && <ScanBox operationId={operation.id} direction="received_from_laundry" label={`Принято из стирки · ${received.length}`} />}
             {!editable && <h3 className="font-semibold">Принято из стирки · {received.length}</h3>}
             <ItemsTable items={received} otherDirection="sent_to_laundry" editable={editable} />
           </div>
-          <div className="panel space-y-4 p-4">
+          <div className="panel laundry-panel laundry-panel-sent space-y-4 p-4">
             {editable && <ScanBox operationId={operation.id} direction="sent_to_laundry" label={`Отдано в стирку · ${sent.length}`} />}
             {!editable && <h3 className="font-semibold">Отдано в стирку · {sent.length}</h3>}
             <ItemsTable items={sent} otherDirection="received_from_laundry" editable={editable} />

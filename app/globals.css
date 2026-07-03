@@ -185,6 +185,57 @@ button:active,
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
 }
 
+.laundry-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.laundry-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 5px;
+}
+
+.laundry-panel-received {
+  background: #f5fbf6;
+  border-color: #bfe5c8;
+}
+
+.laundry-panel-received::before {
+  background: #3f9b5f;
+}
+
+.laundry-panel-sent {
+  background: #fff7f7;
+  border-color: #efc5c5;
+}
+
+.laundry-panel-sent::before {
+  background: #d86b6b;
+}
+
+.laundry-panel-received h3 {
+  color: #20723f;
+}
+
+.laundry-panel-sent h3 {
+  color: #a33f3f;
+}
+
+.laundry-panel .table-wrap {
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.laundry-panel-received tbody tr:hover {
+  background: #edf8f0;
+}
+
+.laundry-panel-sent tbody tr:hover {
+  background: #fff0f0;
+}
+
 .table-wrap {
   overflow-x: auto;
 }
