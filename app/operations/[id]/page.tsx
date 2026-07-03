@@ -6,6 +6,7 @@ import { assertOperationAccess } from "@/lib/access";
 import { fileTypeLabel } from "@/lib/storage";
 import { money, ruDate, statusNames } from "@/lib/format";
 import { ScanBox } from "@/components/ScanBox";
+import { AutoUploadFileInput } from "@/components/AutoUploadFileInput";
 
 export default async function OperationPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
@@ -87,17 +88,9 @@ export default async function OperationPage({ params }: { params: Promise<{ id: 
       )}
 
       {editable && <section className="grid gap-4 md:grid-cols-3">
-        <form action={`/api/operations/${operation.id}/upload-act`} method="post" encType="multipart/form-data" className="panel space-y-3 p-4">
-          <h3 className="font-semibold">Фото акта</h3>
-          <input name="file" type="file" accept="image/*" capture="environment" required />
-          <button className="bg-panel">Загрузить</button>
-        </form>
+        <AutoUploadFileInput action={`/api/operations/${operation.id}/upload-act`} title="Фото акта" />
         {operation.type === "firing_return" && (
-          <form action={`/api/operations/${operation.id}/upload-return-photo`} method="post" encType="multipart/form-data" className="panel space-y-3 p-4">
-            <h3 className="font-semibold">Фото одежды</h3>
-            <input name="file" type="file" accept="image/*" capture="environment" required />
-            <button className="bg-panel">Загрузить</button>
-          </form>
+          <AutoUploadFileInput action={`/api/operations/${operation.id}/upload-return-photo`} title="Фото одежды" />
         )}
         <div className="panel space-y-3 p-4">
           <h3 className="font-semibold">Документы</h3>
