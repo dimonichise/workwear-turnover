@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import { requireAdmin, requireUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { requireUser } from "@/lib/auth";
 
 export default async function SettingsPage() {
   const user = await requireUser();
-  requireAdmin(user.role);
+  if (user.role !== "admin") redirect("/");
   const [stations, users] = await Promise.all([
     prisma.station.findMany({ orderBy: { name: "asc" } }),
     prisma.user.findMany({ include: { station: true }, orderBy: { email: "asc" } })

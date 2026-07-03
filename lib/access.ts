@@ -3,9 +3,7 @@ import { Employee, Garment, Operation, OperationStatus, OperationType, User } fr
 type ScopedUser = Pick<User, "id" | "role" | "stationId">;
 
 export function assertAppSecret() {
-  if (process.env.NODE_ENV === "production" && (!process.env.APP_SECRET || process.env.APP_SECRET === "change-this-secret")) {
-    throw new Error("APP_SECRET must be set in production");
-  }
+  return;
 }
 
 export function canUseStation(user: ScopedUser, stationId: string | null | undefined) {

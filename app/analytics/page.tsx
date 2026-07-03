@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { money, ruDate } from "@/lib/format";
-import { assertAdmin } from "@/lib/access";
 
 export default async function AnalyticsPage() {
   const user = await requireUser();
-  assertAdmin(user);
+  if (user.role !== "admin") redirect("/");
   const stationWhere = { stationId: user.role === "admin" ? undefined : user.stationId || undefined };
   const [byEmployees, inLaundry, returns] = await Promise.all([
     prisma.employee.findMany({

@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { assertAdmin } from "@/lib/access";
 
 export default async function NewReturnPage() {
   const user = await requireUser();
-  assertAdmin(user);
+  if (user.role !== "admin") redirect("/");
   const employees = await prisma.employee.findMany({
     where: { stationId: user.role === "admin" ? undefined : user.stationId || undefined, status: { in: ["active", "fired"] } },
     orderBy: { fullName: "asc" }
