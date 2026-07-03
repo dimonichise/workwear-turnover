@@ -147,6 +147,12 @@ sudo certbot renew --dry-run
 docker compose ps
 ```
 
+Проверка health endpoint приложения:
+
+```bash
+curl -I http://127.0.0.1:3000/api/health
+```
+
 Логи приложения:
 
 ```bash

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redirectTo } from "@/lib/http";
 
-const publicPaths = ["/login", "/api/auth/login", "/manifest.webmanifest", "/sw.js"];
+const publicPaths = ["/login", "/api/auth/login", "/api/health", "/manifest.webmanifest", "/sw.js"];
 
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
