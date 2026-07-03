@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { BarChart3, ClipboardList, History, RotateCcw, Settings, Shirt, Users } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { BarChart3, Box, ClipboardList, History, RotateCcw, Settings, Shirt, UserCheck, Users, WalletCards } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { money } from "@/lib/format";
@@ -28,30 +29,43 @@ export default async function HomePage() {
         ] as const)
       : [])
   ] as const;
+  const metrics: { label: string; value: string | number; icon: LucideIcon; iconClass: string }[] = [
+    { label: "Всего изделий", value: total, icon: Box, iconClass: "icon-soft-teal" },
+    { label: "У сотрудников", value: withEmployee, icon: UserCheck, iconClass: "icon-soft-green" },
+    { label: "В стирке", value: inLaundry, icon: ClipboardList, iconClass: "icon-soft-blue" },
+    { label: "Возвращено", value: returned, icon: RotateCcw, iconClass: "icon-soft-violet" },
+    { label: "Не возвращено", value: notReturned, icon: History, iconClass: "icon-soft-amber" },
+    { label: "Сумма удержаний", value: money(deductions._sum.deductionAmount), icon: WalletCards, iconClass: "icon-soft-rose" }
+  ];
+
   return (
-    <main className="shell space-y-5">
-      <section>
-        <h1 className="text-2xl font-bold">СТО {user.station?.name || "Все СТО"}</h1>
-        <p className="text-sm text-slate-600">Рабочая панель контроля оборота спецодежды</p>
+    <main className="shell space-y-7">
+      <section className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Обзор оборота спецодежды</h1>
+          <p className="mt-1 text-sm text-slate-600">
+            {user.station?.name ? `СТО ${user.station.name}` : "Все СТО"} · актуальная картина по изделиям и операциям.
+          </p>
+        </div>
+        <Link href="/laundry/new" className="button bg-brand text-white">
+          <ClipboardList size={18} />
+          Новая стирка
+        </Link>
       </section>
-      <section className="grid grid-cols-2 gap-3 md:grid-cols-6">
-        {[
-          ["Всего", total],
-          ["У сотрудников", withEmployee],
-          ["В стирке", inLaundry],
-          ["Возвращено", returned],
-          ["Не возвращено", notReturned],
-          ["Удержания", money(deductions._sum.deductionAmount)]
-        ].map(([label, value]) => (
-          <div key={label} className="panel p-3">
-            <div className="text-xs text-slate-600">{label}</div>
-            <div className="mt-1 text-xl font-bold">{value}</div>
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {metrics.map(({ label, value, icon: Icon, iconClass }) => (
+          <div key={label} className="metric-card">
+            <span className={`metric-icon ${iconClass}`}>
+              <Icon size={20} />
+            </span>
+            <div className="mt-5 text-3xl font-bold tracking-tight">{value}</div>
+            <div className="mt-1 text-sm text-slate-600">{label}</div>
           </div>
         ))}
       </section>
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {links.map(([href, label, Icon]) => (
-          <Link key={href} href={href} className="panel flex items-center gap-3 p-4 font-semibold">
+          <Link key={href} href={href} className="action-card">
             <Icon size={22} /> {label}
           </Link>
         ))}

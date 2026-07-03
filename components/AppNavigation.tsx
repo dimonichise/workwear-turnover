@@ -2,25 +2,49 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowLeft, Home } from "lucide-react";
+import { ArrowLeft, BarChart3, ClipboardList, History, Home, RotateCcw, Settings, Shirt, Users } from "lucide-react";
 
-export function AppNavigation() {
+type AppNavigationProps = {
+  role: "admin" | "master";
+};
+
+export function AppNavigation({ role }: AppNavigationProps) {
   const router = useRouter();
   const pathname = usePathname();
   const isHome = pathname === "/";
-
-  if (isHome) return null;
+  const items = [
+    { href: "/", label: "Главная", icon: Home },
+    { href: "/laundry/new", label: "Стирка", icon: ClipboardList },
+    { href: "/garments", label: "Изделия", icon: Shirt },
+    { href: "/operations", label: "История", icon: History },
+    ...(role === "admin"
+      ? [
+          { href: "/employees", label: "Сотрудники", icon: Users },
+          { href: "/returns/new", label: "Возврат", icon: RotateCcw },
+          { href: "/analytics", label: "Аналитика", icon: BarChart3 },
+          { href: "/settings", label: "Настройки", icon: Settings }
+        ]
+      : [])
+  ];
 
   return (
-    <nav className="flex items-center gap-2" aria-label="Навигация">
-      <button type="button" onClick={() => router.back()} className="bg-panel" title="Назад">
-        <ArrowLeft size={16} />
-        <span className="hidden sm:inline">Назад</span>
-      </button>
-      <Link href="/" className="button bg-panel" title="Главная">
-        <Home size={16} />
-        <span className="hidden sm:inline">Главная</span>
-      </Link>
+    <nav className="flex flex-wrap items-center gap-2" aria-label="Навигация">
+      {!isHome && (
+        <button type="button" onClick={() => router.back()} className="bg-panel nav-control" title="Назад">
+          <ArrowLeft size={16} />
+          <span className="hidden sm:inline">Назад</span>
+        </button>
+      )}
+      {items.map((item) => {
+        const Icon = item.icon;
+        const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+        return (
+          <Link key={item.href} href={item.href} className={`nav-link ${active ? "nav-link-active" : ""}`}>
+            <Icon size={16} />
+            <span>{item.label}</span>
+          </Link>
+        );
+      })}
     </nav>
   );
 }
