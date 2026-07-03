@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { LogOut, Shirt } from "lucide-react";
 import { currentUser } from "@/lib/auth";
+import { AppNavigation } from "@/components/AppNavigation";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,9 +25,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {user && (
           <header className="border-b border-line bg-white">
             <div className="shell flex items-center justify-between gap-3 py-3">
-              <Link href="/" className="flex items-center gap-2 font-bold">
-                <Shirt size={22} /> Спецодежда
-              </Link>
+              <div className="flex flex-wrap items-center gap-3">
+                <Link href="/" className="flex items-center gap-2 font-bold">
+                  <Shirt size={22} /> Спецодежда
+                </Link>
+                <AppNavigation />
+              </div>
               <div className="flex items-center gap-3 text-sm">
                 <span>{user.fullName}</span>
                 <form action="/api/auth/logout" method="post">

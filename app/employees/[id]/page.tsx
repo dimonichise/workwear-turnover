@@ -47,13 +47,21 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
             </tr>
           </thead>
           <tbody>
-            {employee.garments.map((garment) => (
-              <tr key={garment.id}>
-                <td>{garment.label || garment.garmentType.name}</td>
-                <td>{garment.barcode}</td>
-                <td>{statusNames[garment.status]}</td>
+            {employee.garments.length === 0 ? (
+              <tr>
+                <td colSpan={3} className="text-sm text-slate-600">
+                  За сотрудником пока нет закрепленных изделий.
+                </td>
               </tr>
-            ))}
+            ) : (
+              employee.garments.map((garment) => (
+                <tr key={garment.id}>
+                  <td>{garment.label || garment.garmentType.name}</td>
+                  <td>{garment.barcode}</td>
+                  <td>{statusNames[garment.status]}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </section>

@@ -24,6 +24,10 @@ textarea {
 
 button,
 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   border-radius: 8px;
   padding: 10px 12px;
   font-weight: 650;

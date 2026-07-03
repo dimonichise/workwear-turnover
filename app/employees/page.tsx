@@ -40,6 +40,7 @@ export default async function EmployeesPage() {
               <th>СТО</th>
               <th>Статус</th>
               <th>Изделий</th>
+              <th>Карточка</th>
             </tr>
           </thead>
           <tbody>
@@ -54,6 +55,11 @@ export default async function EmployeesPage() {
                 <td>{employee.station.name}</td>
                 <td>{statusNames[employee.status]}</td>
                 <td>{employee._count.garments}</td>
+                <td>
+                  <Link className="button inline-flex bg-panel text-brand" href={`/employees/${employee.id}`}>
+                    Открыть
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>
