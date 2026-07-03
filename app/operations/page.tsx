@@ -1,19 +1,11 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { ruDate } from "@/lib/format";
+import { ruDate, statusNames } from "@/lib/format";
+import { getVisibleOperations } from "@/lib/operations";
 
 export default async function OperationsPage() {
   const user = await requireUser();
-  const operations = await prisma.operation.findMany({
-    where: {
-      stationId: user.role === "admin" ? undefined : user.stationId || undefined,
-      type: user.role === "admin" ? undefined : "laundry"
-    },
-    include: { station: true, employee: true, _count: { select: { items: true, attachments: true } } },
-    orderBy: { createdAt: "desc" },
-    take: 100
-  });
+  const operations = await getVisibleOperations(user);
   return (
     <main className="shell space-y-5">
       <h1 className="text-2xl font-bold">История операций</h1>
@@ -41,7 +33,7 @@ export default async function OperationsPage() {
                 <td>{operation.station.name}</td>
                 <td>{operation.employee?.fullName || ""}</td>
                 <td>{operation._count.items}</td>
-                <td>{operation.status}</td>
+                <td>{statusNames[operation.status] || operation.status}</td>
               </tr>
             ))}
           </tbody>

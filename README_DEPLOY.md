@@ -75,6 +75,12 @@ docker compose exec app npx prisma migrate deploy
 docker compose exec app npx prisma db seed
 ```
 
+Если нужно удалить старые непроведённые черновики операций и оставить только один активный черновик на СТО/тип операции:
+
+```bash
+docker compose exec app npm run cleanup:operations
+```
+
 Проверка локального ответа приложения:
 
 ```bash
@@ -166,6 +172,7 @@ cd /opt/workwear-app
 git pull
 docker compose up -d --build
 docker compose exec app npx prisma migrate deploy
+docker compose exec app npm run cleanup:operations
 ```
 
 Полная остановка:

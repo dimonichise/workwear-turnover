@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { BarcodeScannerInput } from "@/components/BarcodeScannerInput";
 
 export default async function NewGarmentPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const user = await requireUser();
@@ -27,10 +28,7 @@ export default async function NewGarmentPage({ searchParams }: { searchParams: P
       <form action="/api/garments" method="post" className="panel space-y-4 p-4">
         <input type="hidden" name="redirectTo" value={query.redirectTo || "/garments"} />
         <input type="hidden" name="status" value={query.status || "with_employee"} />
-        <label className="block space-y-1 text-sm">
-          <span>Штрих-код</span>
-          <input name="barcode" defaultValue={query.barcode || ""} required />
-        </label>
+        <BarcodeScannerInput defaultValue={query.barcode || ""} />
         <label className="block space-y-1 text-sm">
           <span>СТО</span>
           <select name="stationId" defaultValue={user.stationId || stations[0]?.id}>
