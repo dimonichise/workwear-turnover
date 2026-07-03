@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { assertAdmin } from "@/lib/access";
 import { statusNames } from "@/lib/format";
 
 export default async function EmployeesPage() {
   const user = await requireUser();
+  assertAdmin(user);
   const [employees, stations] = await Promise.all([
     prisma.employee.findMany({
       where: { stationId: user.role === "admin" ? undefined : user.stationId || undefined },

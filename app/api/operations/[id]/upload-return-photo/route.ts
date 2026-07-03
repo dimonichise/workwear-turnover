@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { assertOperationAccess, assertOperationEditable } from "@/lib/access";
+import { assertAdmin, assertOperationAccess, assertOperationEditable } from "@/lib/access";
 import { imageExtension, returnPhotoName, saveOperationFile } from "@/lib/storage";
 import { redirectTo } from "@/lib/http";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
+  assertAdmin(user);
   const { id } = await params;
   const operation = await prisma.operation.findUnique({ where: { id }, include: { station: true } });
   if (!operation) return NextResponse.json({ error: "Операция не найдена" }, { status: 404 });

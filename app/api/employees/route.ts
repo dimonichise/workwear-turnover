@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { assertStationAccess } from "@/lib/access";
+import { assertAdmin, assertStationAccess } from "@/lib/access";
 import { redirectTo } from "@/lib/http";
 
 export async function GET() {
@@ -12,6 +12,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const user = await requireUser();
+  assertAdmin(user);
   const form = await req.formData();
   const stationId = String(form.get("stationId") || user.stationId || "");
   assertStationAccess(user, stationId);

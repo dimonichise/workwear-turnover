@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { assertAdmin } from "@/lib/access";
 
 export async function GET() {
   const user = await requireUser();
+  assertAdmin(user);
   const stationWhere = { stationId: user.role === "admin" ? undefined : user.stationId || undefined };
   const [total, withEmployee, inLaundry, returned, notReturned, deductions] = await Promise.all([
     prisma.garment.count({ where: stationWhere }),

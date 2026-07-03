@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { assertOperationAccess } from "@/lib/access";
+import { assertAdmin, assertOperationAccess } from "@/lib/access";
 import { fileTypeLabel } from "@/lib/storage";
 import { money, ruDate, statusNames } from "@/lib/format";
 import { ScanBox } from "@/components/ScanBox";
@@ -23,6 +23,7 @@ export default async function OperationPage({ params }: { params: Promise<{ id: 
   });
   if (!operation) notFound();
   assertOperationAccess(user, operation);
+  if (operation.type === "firing_return") assertAdmin(user);
 
   const received = operation.items.filter((item) => item.direction === "received_from_laundry");
   const sent = operation.items.filter((item) => item.direction === "sent_to_laundry");

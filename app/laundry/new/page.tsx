@@ -3,7 +3,13 @@ import { requireUser } from "@/lib/auth";
 
 export default async function NewLaundryPage() {
   const user = await requireUser();
-  const stations = await prisma.station.findMany({ where: { isActive: true }, orderBy: { name: "asc" } });
+  const stations = await prisma.station.findMany({
+    where: {
+      isActive: true,
+      id: user.role === "admin" ? undefined : user.stationId || undefined
+    },
+    orderBy: { name: "asc" }
+  });
   return (
     <main className="shell max-w-xl space-y-4">
       <h1 className="text-2xl font-bold">Новая стирка</h1>

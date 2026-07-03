@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { assertOperationAccess } from "@/lib/access";
+import { assertAdmin, assertOperationAccess } from "@/lib/access";
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
@@ -17,5 +17,6 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     });
   if (!operation) return NextResponse.json({ error: "Операция не найдена" }, { status: 404 });
   assertOperationAccess(user, operation);
+  if (operation.type === "firing_return") assertAdmin(user);
   return NextResponse.json(operation);
 }

@@ -2,11 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { assertEmployeeAccess } from "@/lib/access";
+import { assertAdmin, assertEmployeeAccess } from "@/lib/access";
 import { statusNames, ruDate } from "@/lib/format";
 
 export default async function EmployeePage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
+  assertAdmin(user);
   const { id } = await params;
   const employee = await prisma.employee.findUnique({
     where: { id },

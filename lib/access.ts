@@ -18,6 +18,16 @@ export function assertStationAccess(user: ScopedUser, stationId: string | null |
   }
 }
 
+export function assertAdmin(user: ScopedUser) {
+  if (user.role !== "admin") {
+    throw new Response("Недостаточно прав", { status: 403 });
+  }
+}
+
+export function isAdmin(user: ScopedUser) {
+  return user.role === "admin";
+}
+
 export function assertEmployeeAccess(user: ScopedUser, employee: Pick<Employee, "stationId">) {
   assertStationAccess(user, employee.stationId);
 }

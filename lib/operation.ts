@@ -1,5 +1,5 @@
 import { GarmentStatus, ItemDirection, OperationType, User } from "@prisma/client";
-import { assertGarmentAccess, assertOperationAccess, assertOperationEditable, isValidDirectionForOperation } from "@/lib/access";
+import { assertAdmin, assertGarmentAccess, assertOperationAccess, assertOperationEditable, isValidDirectionForOperation } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 
 export function targetStatus(direction: ItemDirection): GarmentStatus {
@@ -19,6 +19,7 @@ export async function addGarmentToOperation(params: {
   const operation = await prisma.operation.findUnique({ where: { id: params.operationId } });
   if (!operation) throw new Error("Операция не найдена");
   assertOperationAccess(params.user, operation);
+  if (operation.type === OperationType.firing_return) assertAdmin(params.user);
   assertOperationEditable(operation);
   if (!isValidDirectionForOperation(operation.type, params.direction)) {
     throw new Error("Направление не подходит для типа операции");
@@ -87,6 +88,7 @@ export async function moveOperationItem(params: {
   });
   if (!item || item.operationId !== params.operationId) throw new Error("Позиция не найдена");
   assertOperationAccess(params.user, item.operation);
+  if (item.operation.type === OperationType.firing_return) assertAdmin(params.user);
   assertOperationEditable(item.operation);
   assertGarmentAccess(params.user, item.garment);
   if (!isValidDirectionForOperation(item.operation.type, params.direction)) {
@@ -133,6 +135,7 @@ export async function deleteOperationItem(params: {
   });
   if (!item || item.operationId !== params.operationId) throw new Error("Позиция не найдена");
   assertOperationAccess(params.user, item.operation);
+  if (item.operation.type === OperationType.firing_return) assertAdmin(params.user);
   assertOperationEditable(item.operation);
   assertGarmentAccess(params.user, item.garment);
 

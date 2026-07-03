@@ -17,12 +17,16 @@ export default async function HomePage() {
   ]);
   const links = [
     ["/laundry/new", "Новая стирка", ClipboardList],
-    ["/returns/new", "Возврат уволенного", RotateCcw],
-    ["/employees", "Сотрудники", Users],
     ["/garments", "Спецодежда", Shirt],
-    ["/analytics", "Аналитика", BarChart3],
     ["/operations", "История операций", History],
-    ["/settings", "Настройки", Settings]
+    ...(user.role === "admin"
+      ? ([
+          ["/returns/new", "Возврат уволенного", RotateCcw],
+          ["/employees", "Сотрудники", Users],
+          ["/analytics", "Аналитика", BarChart3],
+          ["/settings", "Настройки", Settings]
+        ] as const)
+      : [])
   ] as const;
   return (
     <main className="shell space-y-5">

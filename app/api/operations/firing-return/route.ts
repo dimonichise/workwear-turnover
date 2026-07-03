@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { assertEmployeeAccess } from "@/lib/access";
+import { assertAdmin, assertEmployeeAccess } from "@/lib/access";
 import { redirectTo } from "@/lib/http";
 
 export async function POST(req: NextRequest) {
   const user = await requireUser();
+  assertAdmin(user);
   const form = await req.formData();
   const employeeId = String(form.get("employeeId"));
   const employee = await prisma.employee.findUnique({ where: { id: employeeId }, include: { garments: true } });
