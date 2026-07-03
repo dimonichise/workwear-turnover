@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { assertOperationAccess, assertOperationEditable } from "@/lib/access";
 import { actName, imageExtension, saveOperationFile } from "@/lib/storage";
+import { redirectTo } from "@/lib/http";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const saved = await saveOperationFile(operation, file, fileName);
     await prisma.attachment.deleteMany({ where: { operationId: id, fileType: "act_photo" } });
     await prisma.attachment.create({ data: { operationId: id, fileType: "act_photo", fileName, ...saved } });
-    return NextResponse.redirect(new URL(`/operations/${id}`, req.url), { status: 303 });
+    return redirectTo(`/operations/${id}`);
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Не удалось загрузить акт" }, { status: 400 });
   }

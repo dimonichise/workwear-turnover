@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { assertOperationAccess, assertOperationEditable } from "@/lib/access";
 import { generateLaundryExcel } from "@/lib/excel";
+import { redirectTo } from "@/lib/http";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
@@ -13,5 +14,5 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   assertOperationEditable(operation);
   if (operation.type !== "laundry") return NextResponse.json({ error: "Это не операция стирки" }, { status: 400 });
   await generateLaundryExcel(id);
-  return NextResponse.redirect(new URL(`/operations/${id}`, req.url), { status: 303 });
+  return redirectTo(`/operations/${id}`);
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { assertEmployeeAccess } from "@/lib/access";
+import { redirectTo } from "@/lib/http";
 
 export async function POST(req: NextRequest) {
   const user = await requireUser();
@@ -20,5 +21,5 @@ export async function POST(req: NextRequest) {
     }
   });
   await prisma.employee.update({ where: { id: employeeId }, data: { status: "fired", firedDate: new Date() } });
-  return NextResponse.redirect(new URL(`/operations/${operation.id}`, req.url), { status: 303 });
+  return redirectTo(`/operations/${operation.id}`);
 }

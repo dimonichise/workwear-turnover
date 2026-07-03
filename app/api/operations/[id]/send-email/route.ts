@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { assertOperationAccess } from "@/lib/access";
 import { sendOperationEmail } from "@/lib/mail";
+import { redirectTo } from "@/lib/http";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
@@ -12,7 +13,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   assertOperationAccess(user, operation);
   try {
     await sendOperationEmail(id);
-    return NextResponse.redirect(new URL(`/operations/${id}`, req.url), { status: 303 });
+    return redirectTo(`/operations/${id}`);
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Не удалось отправить письмо" }, { status: 400 });
   }

@@ -3,6 +3,7 @@ import { GarmentStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { assertEmployeeAccess, assertLocalRedirect, assertStationAccess } from "@/lib/access";
+import { redirectTo as redirectResponse } from "@/lib/http";
 
 export async function GET() {
   const user = await requireUser();
@@ -53,5 +54,5 @@ export async function POST(req: NextRequest) {
       comment: "Первичное добавление изделия"
     }
   });
-  return NextResponse.redirect(new URL(redirectTo, req.url), { status: 303 });
+  return redirectResponse(redirectTo);
 }
