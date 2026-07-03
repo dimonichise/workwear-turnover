@@ -49,7 +49,6 @@ export async function addGarmentToOperation(params: {
   const inOtherBlock = await prisma.operationItem.findFirst({
     where: { operationId: operation.id, garmentId: garment.id, direction: { not: params.direction } }
   });
-  const newStatus = targetStatus(params.direction);
   const item = await prisma.$transaction(async (tx) => {
     const created = await tx.operationItem.create({
       data: {
@@ -60,17 +59,7 @@ export async function addGarmentToOperation(params: {
         scannedById: params.user.id
       }
     });
-    await tx.garment.update({ where: { id: garment.id }, data: { status: newStatus } });
-    await tx.garmentHistory.create({
-      data: {
-        garmentId: garment.id,
-        operationId: operation.id,
-        eventType: operation.type === OperationType.laundry ? "laundry_scan" : "firing_return",
-        oldStatus: garment.status,
-        newStatus,
-        userId: params.user.id
-      }
-    });
+    await resetGeneratedExcel(tx, operation.id);
     return created;
   });
   return { item, warning: inOtherBlock ? "Штрих-код уже есть в другом блоке этой операции" : null };
@@ -107,21 +96,10 @@ export async function moveOperationItem(params: {
   });
   if (duplicate) throw new Error("Изделие уже есть в целевом блоке");
 
-  const newStatus = targetStatus(params.direction);
-  await prisma.$transaction([
-    prisma.operationItem.update({ where: { id: item.id }, data: { direction: params.direction, scannedById: params.user.id } }),
-    prisma.garment.update({ where: { id: item.garmentId }, data: { status: newStatus } }),
-    prisma.garmentHistory.create({
-      data: {
-        garmentId: item.garmentId,
-        operationId: item.operationId,
-        eventType: "move_item",
-        oldStatus: item.garment.status,
-        newStatus,
-        userId: params.user.id
-      }
-    })
-  ]);
+  await prisma.$transaction(async (tx) => {
+    await tx.operationItem.update({ where: { id: item.id }, data: { direction: params.direction, scannedById: params.user.id } });
+    await resetGeneratedExcel(tx, item.operationId);
+  });
 }
 
 export async function deleteOperationItem(params: {
@@ -141,30 +119,37 @@ export async function deleteOperationItem(params: {
 
   await prisma.$transaction(async (tx) => {
     await tx.operationItem.delete({ where: { id: item.id } });
-    const remaining = await tx.operationItem.findFirst({
-      where: { operationId: item.operationId, garmentId: item.garmentId },
-      orderBy: { scanTime: "desc" }
-    });
-    const previous = await tx.garmentHistory.findFirst({
-      where: { operationId: item.operationId, garmentId: item.garmentId, oldStatus: { not: null } },
-      orderBy: { createdAt: "asc" }
-    });
-    const newStatus = remaining ? targetStatus(remaining.direction) : toGarmentStatus(previous?.oldStatus) || "with_employee";
-    await tx.garment.update({ where: { id: item.garmentId }, data: { status: newStatus } });
-    await tx.garmentHistory.create({
-      data: {
-        garmentId: item.garmentId,
-        operationId: item.operationId,
-        eventType: "delete_item",
-        oldStatus: item.garment.status,
-        newStatus,
-        userId: params.user.id
-      }
-    });
+    await resetGeneratedExcel(tx, item.operationId);
   });
 }
 
-function toGarmentStatus(value?: string | null): GarmentStatus | null {
-  if (!value) return null;
-  return Object.values(GarmentStatus).includes(value as GarmentStatus) ? (value as GarmentStatus) : null;
+export async function finalizeOperationGarmentStatuses(operationId: string) {
+  const operation = await prisma.operation.findUnique({
+    where: { id: operationId },
+    include: { items: { include: { garment: true }, orderBy: { scanTime: "asc" } } }
+  });
+  if (!operation) throw new Error("Операция не найдена");
+  if (operation.status === "sent") return;
+
+  await prisma.$transaction(async (tx) => {
+    for (const item of operation.items) {
+      const newStatus = targetStatus(item.direction);
+      await tx.garment.update({ where: { id: item.garmentId }, data: { status: newStatus } });
+      await tx.garmentHistory.create({
+        data: {
+          garmentId: item.garmentId,
+          operationId: operation.id,
+          eventType: operation.type === OperationType.laundry ? "laundry_finalized" : "firing_return_finalized",
+          oldStatus: item.garment.status,
+          newStatus,
+          userId: item.scannedById
+        }
+      });
+    }
+  });
+}
+
+async function resetGeneratedExcel(tx: any, operationId: string) {
+  await tx.attachment.deleteMany({ where: { operationId, fileType: "excel_detail" } });
+  await tx.operation.update({ where: { id: operationId }, data: { status: "draft" } });
 }

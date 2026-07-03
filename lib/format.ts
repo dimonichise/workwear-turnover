@@ -7,6 +7,11 @@ export const statusNames: Record<string, string> = {
   returned_after_firing: "возвращено",
   not_returned: "не возвращено",
   unknown: "требует проверки",
+  draft: "черновик",
+  ready: "готово к отправке",
+  sent: "проведено",
+  error: "ошибка",
+  cancelled: "отменено",
   received_from_laundry: "принято из стирки",
   sent_to_laundry: "отдано в стирку"
 };

@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import nodemailer from "nodemailer";
 import { prisma } from "@/lib/prisma";
 import { fileDate } from "@/lib/format";
+import { finalizeOperationGarmentStatuses } from "@/lib/operation";
 
 export async function sendOperationEmail(operationId: string) {
   const operation = await prisma.operation.findUnique({
@@ -36,6 +37,7 @@ export async function sendOperationEmail(operationId: string) {
     )
   });
 
+  await finalizeOperationGarmentStatuses(operation.id);
   await prisma.operation.update({ where: { id: operation.id }, data: { status: "sent", emailSentAt: new Date() } });
   return { subject };
 }

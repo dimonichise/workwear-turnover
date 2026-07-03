@@ -9,6 +9,16 @@ export async function POST(req: NextRequest) {
   const form = await req.formData();
   const stationId = String(form.get("stationId") || user.stationId || "");
   assertStationAccess(user, stationId);
+  const existing = await prisma.operation.findFirst({
+    where: {
+      stationId,
+      type: "laundry",
+      status: { in: ["draft", "ready"] }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+  if (existing) return redirectTo(`/operations/${existing.id}`);
+
   const operation = await prisma.operation.create({
     data: {
       stationId,

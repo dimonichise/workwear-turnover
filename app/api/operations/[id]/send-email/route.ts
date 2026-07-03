@@ -12,6 +12,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!operation) return NextResponse.json({ error: "Операция не найдена" }, { status: 404 });
   assertOperationAccess(user, operation);
   if (operation.type === "firing_return") assertAdmin(user);
+  if (operation.status === "sent") return NextResponse.json({ error: "Операция уже проведена" }, { status: 400 });
   try {
     await sendOperationEmail(id);
     return redirectTo(`/operations/${id}`);

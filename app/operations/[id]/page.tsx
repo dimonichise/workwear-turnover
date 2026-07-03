@@ -31,6 +31,7 @@ export default async function OperationPage({ params }: { params: Promise<{ id: 
   const returned = operation.items.filter((item) => item.direction === "returned_after_firing");
   const notReturned = operation.items.filter((item) => item.direction === "not_returned");
   const remaining = operation.employee?.garments.filter((garment) => !operation.items.some((item) => item.garmentId === garment.id)) || [];
+  const editable = operation.status !== "sent" && operation.status !== "cancelled";
 
   return (
     <main className="shell space-y-5">
@@ -39,29 +40,37 @@ export default async function OperationPage({ params }: { params: Promise<{ id: 
         <p className="text-sm text-slate-600">
           {operation.station.name} · {ruDate(operation.operationDate)} · статус: {statusNames[operation.status] || operation.status}
         </p>
+        {editable && (
+          <form action={`/api/operations/${operation.id}/delete-draft`} method="post" className="mt-3">
+            <button className="bg-panel text-warn">Удалить черновик</button>
+          </form>
+        )}
         {operation.employee && <p className="text-sm text-slate-600">Сотрудник: {operation.employee.fullName}</p>}
       </section>
 
       {operation.type === "laundry" ? (
         <section className="grid gap-4 md:grid-cols-2">
           <div className="panel space-y-4 p-4">
-            <ScanBox operationId={operation.id} direction="received_from_laundry" label={`Принято из стирки · ${received.length}`} />
-            <ItemsTable items={received} otherDirection="sent_to_laundry" />
+            {editable && <ScanBox operationId={operation.id} direction="received_from_laundry" label={`Принято из стирки · ${received.length}`} />}
+            {!editable && <h3 className="font-semibold">Принято из стирки · {received.length}</h3>}
+            <ItemsTable items={received} otherDirection="sent_to_laundry" editable={editable} />
           </div>
           <div className="panel space-y-4 p-4">
-            <ScanBox operationId={operation.id} direction="sent_to_laundry" label={`Отдано в стирку · ${sent.length}`} />
-            <ItemsTable items={sent} otherDirection="received_from_laundry" />
+            {editable && <ScanBox operationId={operation.id} direction="sent_to_laundry" label={`Отдано в стирку · ${sent.length}`} />}
+            {!editable && <h3 className="font-semibold">Отдано в стирку · {sent.length}</h3>}
+            <ItemsTable items={sent} otherDirection="received_from_laundry" editable={editable} />
           </div>
         </section>
       ) : (
         <section className="grid gap-4 lg:grid-cols-3">
           <div className="panel space-y-4 p-4 lg:col-span-2">
-            <ScanBox operationId={operation.id} direction="returned_after_firing" label={`Возвращено · ${returned.length}`} />
-            <ItemsTable items={returned} otherDirection="not_returned" />
+            {editable && <ScanBox operationId={operation.id} direction="returned_after_firing" label={`Возвращено · ${returned.length}`} />}
+            {!editable && <h3 className="font-semibold">Возвращено · {returned.length}</h3>}
+            <ItemsTable items={returned} otherDirection="not_returned" editable={editable} />
           </div>
           <div className="panel space-y-3 p-4">
             <h3 className="font-semibold">Не отмечены</h3>
-            {remaining.map((garment) => (
+            {editable && remaining.map((garment) => (
               <form key={garment.id} action={`/api/operations/${operation.id}/scan`} method="post" className="space-y-2 border-b border-line pb-3">
                 <input type="hidden" name="barcode" value={garment.barcode} />
                 <input type="hidden" name="direction" value="not_returned" />
@@ -72,12 +81,12 @@ export default async function OperationPage({ params }: { params: Promise<{ id: 
                 <button className="bg-panel">Не возвращено</button>
               </form>
             ))}
-            <ItemsTable items={notReturned} otherDirection="returned_after_firing" />
+            <ItemsTable items={notReturned} otherDirection="returned_after_firing" editable={editable} />
           </div>
         </section>
       )}
 
-      <section className="grid gap-4 md:grid-cols-3">
+      {editable && <section className="grid gap-4 md:grid-cols-3">
         <form action={`/api/operations/${operation.id}/upload-act`} method="post" encType="multipart/form-data" className="panel space-y-3 p-4">
           <h3 className="font-semibold">Фото акта</h3>
           <input name="file" type="file" accept="image/*" capture="environment" required />
@@ -106,12 +115,12 @@ export default async function OperationPage({ params }: { params: Promise<{ id: 
             ))}
           </ul>
         </div>
-      </section>
+      </section>}
     </main>
   );
 }
 
-function ItemsTable({ items, otherDirection }: { items: any[]; otherDirection: string }) {
+function ItemsTable({ items, otherDirection, editable }: { items: any[]; otherDirection: string; editable: boolean }) {
   if (!items.length) return <p className="text-sm text-slate-600">Пока нет позиций</p>;
   return (
     <div className="table-wrap">
@@ -126,7 +135,7 @@ function ItemsTable({ items, otherDirection }: { items: any[]; otherDirection: s
                   {Number(item.deductionAmount) > 0 ? ` · ${money(item.deductionAmount)}` : ""}
                 </div>
               </td>
-              <td className="w-24">
+              {editable && <td className="w-24">
                 <form action={`/api/operations/${item.operationId}/move-item`} method="post" className="mb-2">
                   <input type="hidden" name="itemId" value={item.id} />
                   <input type="hidden" name="direction" value={otherDirection} />
@@ -135,7 +144,7 @@ function ItemsTable({ items, otherDirection }: { items: any[]; otherDirection: s
                 <form action={`/api/operations/${item.operationId}/items/${item.id}`} method="post">
                   <button className="bg-panel text-xs">Удалить</button>
                 </form>
-              </td>
+              </td>}
             </tr>
           ))}
         </tbody>
