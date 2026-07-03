@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const publicPaths = ["/login", "/api/auth/login", "/manifest.webmanifest", "/sw.js"];
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
   if (
     publicPaths.some((publicPath) => path === publicPath || path.startsWith("/_next")) ||
@@ -11,12 +11,40 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
   const sessionCookie = req.cookies.get("workwear_session")?.value;
-  if (!sessionCookie || !sessionCookie.includes(".")) {
+  if (!(await isValidSessionCookie(sessionCookie))) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
   return NextResponse.next();
+}
+
+async function isValidSessionCookie(token?: string) {
+  if (!token) return false;
+  const [body, signature] = token.split(".");
+  if (!body || !signature) return false;
+  const expected = await edgeSign(body);
+  if (expected !== signature) return false;
+  try {
+    const base64 = body.replaceAll("-", "+").replaceAll("_", "/");
+    const payload = JSON.parse(atob(base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "="))) as { exp?: number };
+    return typeof payload.exp === "number" && payload.exp > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+async function edgeSign(value: string) {
+  const secret = process.env.APP_SECRET || "dev-secret-change-me";
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value));
+  return btoa(String.fromCharCode(...new Uint8Array(signature))).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
 }
 
 export const config = {

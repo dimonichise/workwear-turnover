@@ -17,7 +17,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     barcode: String(data.barcode).trim(),
     direction: "not_returned",
     deductionAmount,
-    userId: user.id
+    user
   });
   return NextResponse.json(result);
 }

@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { assertStationAccess } from "@/lib/access";
 
 export async function POST(req: NextRequest) {
   const user = await requireUser();
   const form = await req.formData();
+  const stationId = String(form.get("stationId") || user.stationId || "");
+  assertStationAccess(user, stationId);
   const operation = await prisma.operation.create({
     data: {
-      stationId: String(form.get("stationId") || user.stationId),
+      stationId,
       type: "laundry",
       operationDate: form.get("operationDate") ? new Date(String(form.get("operationDate"))) : new Date(),
       actNumber: String(form.get("actNumber") || "") || null,

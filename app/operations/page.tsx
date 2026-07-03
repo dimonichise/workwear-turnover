@@ -4,8 +4,9 @@ import { requireUser } from "@/lib/auth";
 import { ruDate } from "@/lib/format";
 
 export default async function OperationsPage() {
-  await requireUser();
+  const user = await requireUser();
   const operations = await prisma.operation.findMany({
+    where: { stationId: user.role === "admin" ? undefined : user.stationId || undefined },
     include: { station: true, employee: true, _count: { select: { items: true, attachments: true } } },
     orderBy: { createdAt: "desc" },
     take: 100

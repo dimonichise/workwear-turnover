@@ -1,17 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { deleteOperationItem } from "@/lib/operation";
 
-export async function DELETE(_: NextRequest, { params }: { params: Promise<{ itemId: string }> }) {
-  await requireUser();
-  const { itemId } = await params;
-  await prisma.operationItem.delete({ where: { id: itemId } });
-  return NextResponse.json({ ok: true });
+export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string; itemId: string }> }) {
+  const user = await requireUser();
+  const { id, itemId } = await params;
+  try {
+    await deleteOperationItem({ operationId: id, itemId, user });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Не удалось удалить позицию" }, { status: 400 });
+  }
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ itemId: string; id: string }> }) {
-  await requireUser();
+  const user = await requireUser();
   const { itemId, id } = await params;
-  await prisma.operationItem.delete({ where: { id: itemId } });
-  return NextResponse.redirect(new URL(`/operations/${id}`, req.url), { status: 303 });
+  try {
+    await deleteOperationItem({ operationId: id, itemId, user });
+    return NextResponse.redirect(new URL(`/operations/${id}`, req.url), { status: 303 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Не удалось удалить позицию" }, { status: 400 });
+  }
 }

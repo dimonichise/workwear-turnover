@@ -4,6 +4,7 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { assertAppSecret } from "@/lib/access";
 
 const COOKIE = "workwear_session";
 
@@ -15,6 +16,7 @@ type SessionPayload = {
 };
 
 function secret() {
+  assertAppSecret();
   return process.env.APP_SECRET || "dev-secret-change-me";
 }
 
@@ -30,12 +32,16 @@ export function createSessionCookie(payload: Omit<SessionPayload, "exp">) {
 }
 
 export function readSessionToken(token?: string): SessionPayload | null {
-  if (!token) return null;
-  const [body, signature] = token.split(".");
-  if (!body || !signature || sign(body) !== signature) return null;
-  const payload = JSON.parse(Buffer.from(body, "base64url").toString()) as SessionPayload;
-  if (payload.exp < Date.now()) return null;
-  return payload;
+  try {
+    if (!token) return null;
+    const [body, signature] = token.split(".");
+    if (!body || !signature || sign(body) !== signature) return null;
+    const payload = JSON.parse(Buffer.from(body, "base64url").toString()) as SessionPayload;
+    if (payload.exp < Date.now()) return null;
+    return payload;
+  } catch {
+    return null;
+  }
 }
 
 export async function setSession(userId: string) {

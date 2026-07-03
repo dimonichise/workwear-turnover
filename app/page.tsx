@@ -6,13 +6,14 @@ import { money } from "@/lib/format";
 
 export default async function HomePage() {
   const user = await requireUser();
+  const stationWhere = { stationId: user.role === "admin" ? undefined : user.stationId || undefined };
   const [total, withEmployee, inLaundry, returned, notReturned, deductions] = await Promise.all([
-    prisma.garment.count(),
-    prisma.garment.count({ where: { status: "with_employee" } }),
-    prisma.garment.count({ where: { status: "in_laundry" } }),
-    prisma.garment.count({ where: { status: "returned_after_firing" } }),
-    prisma.garment.count({ where: { status: "not_returned" } }),
-    prisma.operationItem.aggregate({ where: { direction: "not_returned" }, _sum: { deductionAmount: true } })
+    prisma.garment.count({ where: stationWhere }),
+    prisma.garment.count({ where: { status: "with_employee", ...stationWhere } }),
+    prisma.garment.count({ where: { status: "in_laundry", ...stationWhere } }),
+    prisma.garment.count({ where: { status: "returned_after_firing", ...stationWhere } }),
+    prisma.garment.count({ where: { status: "not_returned", ...stationWhere } }),
+    prisma.operationItem.aggregate({ where: { direction: "not_returned", garment: stationWhere }, _sum: { deductionAmount: true } })
   ]);
   const links = [
     ["/laundry/new", "Новая стирка", ClipboardList],

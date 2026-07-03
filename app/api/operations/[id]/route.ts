@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { assertOperationAccess } from "@/lib/access";
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  await requireUser();
+  const user = await requireUser();
   const { id } = await params;
-  return NextResponse.json(
-    await prisma.operation.findUnique({
+  const operation = await prisma.operation.findUnique({
       where: { id },
       include: {
         station: true,
@@ -14,6 +14,8 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
         attachments: true,
         items: { include: { garment: { include: { employee: true, garmentType: true, station: true } } } }
       }
-    })
-  );
+    });
+  if (!operation) return NextResponse.json({ error: "Операция не найдена" }, { status: 404 });
+  assertOperationAccess(user, operation);
+  return NextResponse.json(operation);
 }

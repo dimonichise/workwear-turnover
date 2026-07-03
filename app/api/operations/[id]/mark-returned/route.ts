@@ -12,7 +12,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     operationId: id,
     barcode: String(data.barcode).trim(),
     direction: "returned_after_firing",
-    userId: user.id
+    user
   });
   return NextResponse.json(result);
 }

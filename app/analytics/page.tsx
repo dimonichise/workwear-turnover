@@ -3,18 +3,20 @@ import { requireUser } from "@/lib/auth";
 import { money, ruDate } from "@/lib/format";
 
 export default async function AnalyticsPage() {
-  await requireUser();
+  const user = await requireUser();
+  const stationWhere = { stationId: user.role === "admin" ? undefined : user.stationId || undefined };
   const [byEmployees, inLaundry, returns] = await Promise.all([
     prisma.employee.findMany({
+      where: stationWhere,
       include: { station: true, garments: { include: { garmentType: true } } },
       orderBy: { fullName: "asc" }
     }),
     prisma.garment.findMany({
-      where: { status: "in_laundry" },
+      where: { status: "in_laundry", ...stationWhere },
       include: { employee: true, garmentType: true, operationItems: { where: { direction: "sent_to_laundry" }, orderBy: { scanTime: "desc" }, take: 1 } }
     }),
     prisma.operation.findMany({
-      where: { type: "firing_return" },
+      where: { type: "firing_return", ...stationWhere },
       include: { employee: true, items: true },
       orderBy: { operationDate: "desc" }
     })

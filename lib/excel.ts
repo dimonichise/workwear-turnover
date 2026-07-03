@@ -3,7 +3,6 @@ import path from "path";
 import fs from "fs/promises";
 import { prisma } from "@/lib/prisma";
 import { excelName, operationFolder } from "@/lib/storage";
-import { statusNames } from "@/lib/format";
 
 export async function generateLaundryExcel(operationId: string) {
   const operation = await prisma.operation.findUnique({
@@ -81,6 +80,7 @@ async function writeWorkbook(wb: ExcelJS.Workbook, operation: any, fileName: str
   const filePath = path.join(dir, fileName);
   await wb.xlsx.writeFile(filePath);
   const stat = await fs.stat(filePath);
+  await prisma.attachment.deleteMany({ where: { operationId: operation.id, fileType: "excel_detail" } });
   await prisma.attachment.create({
     data: {
       operationId: operation.id,

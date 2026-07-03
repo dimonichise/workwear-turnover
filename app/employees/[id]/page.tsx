@@ -2,16 +2,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { assertEmployeeAccess } from "@/lib/access";
 import { statusNames, ruDate } from "@/lib/format";
 
 export default async function EmployeePage({ params }: { params: Promise<{ id: string }> }) {
-  await requireUser();
+  const user = await requireUser();
   const { id } = await params;
   const employee = await prisma.employee.findUnique({
     where: { id },
     include: { station: true, garments: { include: { garmentType: true }, orderBy: { updatedAt: "desc" } } }
   });
   if (!employee) notFound();
+  assertEmployeeAccess(user, employee);
   return (
     <main className="shell space-y-5">
       <section className="panel space-y-3 p-4">

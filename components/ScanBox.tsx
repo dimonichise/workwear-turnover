@@ -51,7 +51,12 @@ export function ScanBox({
     });
     const data = await res.json();
     if (data.unknown) {
-      const status = direction === "sent_to_laundry" ? "in_laundry" : "with_employee";
+      const status =
+        direction === "sent_to_laundry"
+          ? "in_laundry"
+          : direction === "returned_after_firing"
+            ? "returned_after_firing"
+            : "with_employee";
       location.href = `/garments/new?barcode=${encodeURIComponent(code)}&status=${status}&redirectTo=${encodeURIComponent(`/operations/${operationId}`)}`;
       return;
     }

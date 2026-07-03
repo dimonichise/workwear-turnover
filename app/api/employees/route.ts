@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { assertStationAccess } from "@/lib/access";
 
 export async function GET() {
   const user = await requireUser();
@@ -11,9 +12,11 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const user = await requireUser();
   const form = await req.formData();
+  const stationId = String(form.get("stationId") || user.stationId || "");
+  assertStationAccess(user, stationId);
   const employee = await prisma.employee.create({
     data: {
-      stationId: String(form.get("stationId") || user.stationId),
+      stationId,
       fullName: String(form.get("fullName")),
       position: String(form.get("position") || "") || null,
       hireDate: form.get("hireDate") ? new Date(String(form.get("hireDate"))) : null,

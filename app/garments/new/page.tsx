@@ -6,7 +6,13 @@ export default async function NewGarmentPage({ searchParams }: { searchParams: P
   const query = await searchParams;
   const [stations, employees, types] = await Promise.all([
     prisma.station.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),
-    prisma.employee.findMany({ where: { status: { not: "archived" } }, orderBy: { fullName: "asc" } }),
+    prisma.employee.findMany({
+      where: {
+        status: { not: "archived" },
+        stationId: user.role === "admin" ? undefined : user.stationId || undefined
+      },
+      orderBy: { fullName: "asc" }
+    }),
     prisma.garmentType.findMany({ where: { isActive: true }, orderBy: { name: "asc" } })
   ]);
   return (

@@ -3,6 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 
 export async function GET() {
-  await requireUser();
-  return NextResponse.json(await prisma.operation.findMany({ where: { type: "firing_return" }, include: { employee: true, items: true } }));
+  const user = await requireUser();
+  return NextResponse.json(
+    await prisma.operation.findMany({
+      where: { type: "firing_return", stationId: user.role === "admin" ? undefined : user.stationId || undefined },
+      include: { employee: true, items: true }
+    })
+  );
 }
