@@ -56,7 +56,7 @@ export default async function HomePage() {
           Новая стирка
         </Link>
       </section>
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="dashboard-metrics grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {metrics.map(({ label, value, icon: Icon, iconClass }) => (
           <div key={label} className="metric-card">
             <span className={`metric-icon ${iconClass}`}>
