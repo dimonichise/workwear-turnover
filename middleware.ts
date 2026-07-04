@@ -4,6 +4,9 @@ const publicPaths = ["/login", "/api/auth/login", "/api/health", "/manifest.webm
 
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
+  if (req.headers.has("next-action")) {
+    return NextResponse.redirect(new URL(path, req.url), 303);
+  }
   if (
     publicPaths.some((publicPath) => path === publicPath || path.startsWith("/_next")) ||
     path.match(/\.(png|jpg|jpeg|svg|ico|css|js)$/)
