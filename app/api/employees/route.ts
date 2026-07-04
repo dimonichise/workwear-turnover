@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { assertAdmin, assertStationAccess } from "@/lib/access";
 import { redirectTo } from "@/lib/http";
+import { normalizeEmployeePosition } from "@/lib/positions";
 
 export async function GET() {
   const user = await requireUser();
@@ -16,11 +17,15 @@ export async function POST(req: NextRequest) {
   const form = await req.formData();
   const stationId = String(form.get("stationId") || user.stationId || "");
   assertStationAccess(user, stationId);
+  const position = normalizeEmployeePosition(form.get("position"));
+  if (!position) {
+    return NextResponse.json({ error: "Выберите должность из справочника" }, { status: 400 });
+  }
   const employee = await prisma.employee.create({
     data: {
       stationId,
       fullName: String(form.get("fullName")),
-      position: String(form.get("position") || "") || null,
+      position,
       hireDate: form.get("hireDate") ? new Date(String(form.get("hireDate"))) : null,
       comment: String(form.get("comment") || "") || null
     }

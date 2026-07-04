@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { statusNames } from "@/lib/format";
+import { employeePositions } from "@/lib/positions";
 
 export default async function EmployeesPage() {
   const user = await requireUser();
@@ -22,7 +23,16 @@ export default async function EmployeesPage() {
       </div>
       <form action="/api/employees" method="post" className="panel grid gap-3 p-4 md:grid-cols-5">
         <input name="fullName" placeholder="ФИО" required className="md:col-span-2" />
-        <input name="position" placeholder="Должность" />
+        <select name="position" defaultValue="" required>
+          <option value="" disabled>
+            Должность
+          </option>
+          {employeePositions.map((position) => (
+            <option key={position} value={position}>
+              {position}
+            </option>
+          ))}
+        </select>
         <select name="stationId" defaultValue={user.stationId || stations[0]?.id}>
           {stations.map((station) => (
             <option key={station.id} value={station.id}>
