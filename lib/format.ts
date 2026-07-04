@@ -4,7 +4,7 @@ export const statusNames: Record<string, string> = {
   archived: "архив",
   with_employee: "у сотрудника",
   in_laundry: "в стирке",
-  returned_after_firing: "возвращено",
+  returned_after_firing: "сдано при увольнении",
   not_returned: "не возвращено",
   unknown: "требует проверки",
   draft: "черновик",

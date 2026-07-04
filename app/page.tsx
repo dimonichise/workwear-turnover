@@ -1,21 +1,28 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import { BarChart3, Box, ClipboardList, History, RotateCcw, Settings, Shirt, UserCheck, Users, WalletCards } from "lucide-react";
+import { AlertTriangle, BarChart3, Box, ClipboardList, History, RotateCcw, Settings, Shirt, UserCheck, Users, WalletCards } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { money } from "@/lib/format";
+import { isLaundryDelayed } from "@/lib/laundryDelay";
 
 export default async function HomePage() {
   const user = await requireUser();
   const stationWhere = { stationId: user.role === "admin" ? undefined : user.stationId || undefined };
-  const [total, withEmployee, inLaundry, returned, notReturned, deductions] = await Promise.all([
+  const [total, withEmployee, inLaundry, delayedLaundryCandidates, deductions] = await Promise.all([
     prisma.garment.count({ where: stationWhere }),
     prisma.garment.count({ where: { status: "with_employee", ...stationWhere } }),
     prisma.garment.count({ where: { status: "in_laundry", ...stationWhere } }),
-    prisma.garment.count({ where: { status: "returned_after_firing", ...stationWhere } }),
-    prisma.garment.count({ where: { status: "not_returned", ...stationWhere } }),
+    prisma.garment.findMany({
+      where: { status: "in_laundry", ...stationWhere },
+      select: { id: true, operationItems: { where: { direction: "sent_to_laundry", operation: { status: "sent" } }, orderBy: { scanTime: "desc" }, take: 1 } }
+    }),
     prisma.operationItem.aggregate({ where: { direction: "not_returned", garment: stationWhere }, _sum: { deductionAmount: true } })
   ]);
+  const delayedLaundry = delayedLaundryCandidates.filter((garment) => {
+    const scanTime = garment.operationItems[0]?.scanTime;
+    return scanTime && isLaundryDelayed(scanTime);
+  }).length;
   const links = [
     ["/laundry/new", "Новая стирка", ClipboardList],
     ["/garments", "Спецодежда", Shirt],
@@ -33,8 +40,7 @@ export default async function HomePage() {
     { label: "Всего", value: total, icon: Box, iconClass: "icon-soft-teal" },
     { label: "У сотрудников", value: withEmployee, icon: UserCheck, iconClass: "icon-soft-green" },
     { label: "В стирке", value: inLaundry, icon: ClipboardList, iconClass: "icon-soft-blue" },
-    { label: "Возвращено", value: returned, icon: RotateCcw, iconClass: "icon-soft-violet" },
-    { label: "Не возвращено", value: notReturned, icon: History, iconClass: "icon-soft-amber" },
+    { label: "Задержка", value: delayedLaundry, icon: AlertTriangle, iconClass: "icon-soft-red" },
     { label: "Удержания", value: money(deductions._sum.deductionAmount), icon: WalletCards, iconClass: "icon-soft-rose" }
   ];
 

@@ -228,6 +228,11 @@ button:active,
   background: #fff5dc;
 }
 
+.icon-soft-red {
+  color: #b42318;
+  background: #fff0ed;
+}
+
 .icon-soft-rose {
   color: #be4565;
   background: #fff0f3;
@@ -374,4 +379,13 @@ td form {
 
 tbody tr:hover {
   background: #fafafa;
+}
+
+.delayed-row,
+.delayed-row:hover {
+  background: #fff1f0;
+}
+
+.delayed-row td {
+  color: #8f1f17;
 }

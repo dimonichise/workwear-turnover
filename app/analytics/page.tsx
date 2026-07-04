@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { money, ruDate } from "@/lib/format";
+import { isLaundryDelayed, laundryDays } from "@/lib/laundryDelay";
 
 export default async function AnalyticsPage() {
   const user = await requireUser();
@@ -15,7 +16,11 @@ export default async function AnalyticsPage() {
     }),
     prisma.garment.findMany({
       where: { status: "in_laundry", ...stationWhere },
-      include: { employee: true, garmentType: true, operationItems: { where: { direction: "sent_to_laundry" }, orderBy: { scanTime: "desc" }, take: 1 } }
+      include: {
+        employee: true,
+        garmentType: true,
+        operationItems: { where: { direction: "sent_to_laundry", operation: { status: "sent" } }, orderBy: { scanTime: "desc" }, take: 1 }
+      }
     }),
     prisma.operation.findMany({
       where: { type: "firing_return", ...stationWhere },
@@ -72,13 +77,15 @@ export default async function AnalyticsPage() {
           <tbody>
             {inLaundry.map((garment) => {
               const scanTime = garment.operationItems[0]?.scanTime || garment.updatedAt;
+              const days = laundryDays(scanTime, today);
+              const delayed = isLaundryDelayed(scanTime, today);
               return (
-                <tr key={garment.id}>
+                <tr key={garment.id} className={delayed ? "delayed-row" : undefined}>
                   <td>{ruDate(scanTime)}</td>
                   <td>{garment.employee.fullName}</td>
                   <td>{garment.garmentType.name}</td>
                   <td>{garment.barcode}</td>
-                  <td>{Math.max(0, Math.floor((today - new Date(scanTime).getTime()) / 86400000))}</td>
+                  <td>{days}</td>
                 </tr>
               );
             })}
