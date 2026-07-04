@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LogOut, Shirt } from "lucide-react";
 import { currentUser } from "@/lib/auth";
 import { AppNavigation } from "@/components/AppNavigation";
+import { BrowserStorageRepair } from "@/components/BrowserStorageRepair";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -29,6 +30,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="ru">
       <body>
+        <BrowserStorageRepair />
         {user && (
           <header className="app-header">
             <div className="shell app-header-inner">
