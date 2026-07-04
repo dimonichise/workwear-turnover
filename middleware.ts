@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { redirectTo } from "@/lib/http";
 
 const publicPaths = ["/login", "/api/auth/login", "/api/health", "/manifest.webmanifest", "/sw.js"];
 
@@ -13,7 +12,7 @@ export async function middleware(req: NextRequest) {
   }
   const sessionCookie = req.cookies.get("workwear_session")?.value;
   if (!(await isValidSessionCookie(sessionCookie))) {
-    return redirectTo("/login", 307);
+    return NextResponse.redirect(new URL("/login", req.url), 307);
   }
   return NextResponse.next();
 }
