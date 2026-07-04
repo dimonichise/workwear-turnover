@@ -5,13 +5,21 @@ services:
     init: true
     env_file:
       - .env
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=512"
+      NEXT_TELEMETRY_DISABLED: "1"
+      WATCHDOG_STARTUP_GRACE_MS: "60000"
+      WATCHDOG_TIMEOUT_MS: "10000"
+      WATCHDOG_MAX_FAILURES: "5"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     volumes:
       - ./storage:/app/storage
     ports:
       - "127.0.0.1:3000:3000"
     mem_limit: 768m
+    stop_grace_period: 30s
     logging:
       driver: json-file
       options:
@@ -27,6 +35,12 @@ services:
       POSTGRES_PASSWORD: change_me
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workwear -d workwear"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
     logging:
       driver: json-file
       options:
