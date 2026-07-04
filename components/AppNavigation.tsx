@@ -14,13 +14,13 @@ export function AppNavigation({ role }: AppNavigationProps) {
   const isHome = pathname === "/";
   const items = [
     { href: "/", label: "Главная", icon: Home },
-    { href: "/laundry/new", label: "Стирка", icon: ClipboardList },
-    { href: "/garments", label: "Изделия", icon: Shirt },
-    { href: "/operations", label: "История", icon: History },
+    { href: "/laundry/new", label: "Новая стирка", icon: ClipboardList },
+    { href: "/garments", label: "Спецодежда", icon: Shirt },
+    { href: "/operations", label: "История операций", icon: History },
     ...(role === "admin"
       ? [
           { href: "/employees", label: "Сотрудники", icon: Users },
-          { href: "/returns/new", label: "Возврат", icon: RotateCcw },
+          { href: "/returns/new", label: "Возврат уволенного", icon: RotateCcw },
           { href: "/analytics", label: "Аналитика", icon: BarChart3 },
           { href: "/settings", label: "Настройки", icon: Settings }
         ]
@@ -28,7 +28,7 @@ export function AppNavigation({ role }: AppNavigationProps) {
   ];
 
   return (
-    <nav className="flex flex-wrap items-center gap-2" aria-label="Навигация">
+    <nav className="app-nav" aria-label="Навигация">
       {!isHome && (
         <button type="button" onClick={() => router.back()} className="bg-panel nav-control" title="Назад">
           <ArrowLeft size={16} />

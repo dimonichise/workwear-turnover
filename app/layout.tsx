@@ -31,17 +31,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         {user && (
           <header className="app-header">
-            <div className="shell flex flex-wrap items-center justify-between gap-3 py-3">
-              <div className="flex min-w-0 flex-wrap items-center gap-3">
-                <Link href="/" className="flex items-center gap-2 font-bold">
+            <div className="shell app-header-inner">
+              <div className="app-header-left">
+                <Link href="/" className="brand-link">
                   <span className="brand-mark">
                     <Shirt size={20} />
                   </span>
-                  <span className="text-lg">СпецУчёт</span>
+                  <span>Спецодежда</span>
                 </Link>
                 <AppNavigation role={user.role} />
               </div>
-              <div className="flex items-center gap-2 text-sm">
+              <div className="user-menu">
                 <span className="hidden max-w-44 truncate text-slate-700 sm:inline">{user.fullName}</span>
                 <form action="/api/auth/logout" method="post">
                   <button className="icon-button" title="Выйти">

@@ -30,22 +30,20 @@ export default async function HomePage() {
       : [])
   ] as const;
   const metrics: { label: string; value: string | number; icon: LucideIcon; iconClass: string }[] = [
-    { label: "Всего изделий", value: total, icon: Box, iconClass: "icon-soft-teal" },
+    { label: "Всего", value: total, icon: Box, iconClass: "icon-soft-teal" },
     { label: "У сотрудников", value: withEmployee, icon: UserCheck, iconClass: "icon-soft-green" },
     { label: "В стирке", value: inLaundry, icon: ClipboardList, iconClass: "icon-soft-blue" },
     { label: "Возвращено", value: returned, icon: RotateCcw, iconClass: "icon-soft-violet" },
     { label: "Не возвращено", value: notReturned, icon: History, iconClass: "icon-soft-amber" },
-    { label: "Сумма удержаний", value: money(deductions._sum.deductionAmount), icon: WalletCards, iconClass: "icon-soft-rose" }
+    { label: "Удержания", value: money(deductions._sum.deductionAmount), icon: WalletCards, iconClass: "icon-soft-rose" }
   ];
 
   return (
     <main className="shell space-y-7">
       <section className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Обзор оборота спецодежды</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            {user.station?.name ? `СТО ${user.station.name}` : "Все СТО"} · актуальная картина по изделиям и операциям.
-          </p>
+          <h1 className="page-title">СТО {user.station?.name || "Все СТО"}</h1>
+          <p className="mt-1 text-sm text-slate-600">Рабочая панель контроля оборота спецодежды</p>
         </div>
         <Link href="/laundry/new" className="button bg-brand text-white">
           <ClipboardList size={18} />
