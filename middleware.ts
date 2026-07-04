@@ -11,11 +11,7 @@ export async function middleware(req: NextRequest) {
     publicPaths.some((publicPath) => path === publicPath || path.startsWith("/_next")) ||
     path.match(/\.(png|jpg|jpeg|svg|ico|css|js)$/)
   ) {
-    const response = NextResponse.next();
-    if (path === "/login") {
-      response.headers.set("Clear-Site-Data", '"cache"');
-    }
-    return response;
+    return NextResponse.next();
   }
   const sessionCookie = req.cookies.get("workwear_session")?.value;
   if (!(await isValidSessionCookie(sessionCookie))) {
