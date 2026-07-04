@@ -181,6 +181,18 @@ docker compose exec app npx prisma migrate deploy
 docker compose exec app npm run cleanup:operations
 ```
 
+После нескольких деплоев можно безопасно очистить старые Docker-слои и build cache без удаления базы:
+
+```bash
+docker system df
+docker builder prune -f
+docker image prune -f
+docker container prune -f
+docker system df
+```
+
+Не используйте `docker system prune --volumes`: volume PostgreSQL хранит базу приложения.
+
 Полная остановка:
 
 ```bash
