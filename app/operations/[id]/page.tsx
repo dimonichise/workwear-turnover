@@ -76,7 +76,7 @@ export default async function OperationPage({ params }: { params: Promise<{ id: 
                 <input type="hidden" name="barcode" value={garment.barcode} />
                 <input type="hidden" name="direction" value="not_returned" />
                 <input type="hidden" name="redirectTo" value={`/operations/${operation.id}`} />
-                <div className="text-sm font-semibold">{garment.label || garment.garmentType.name}</div>
+                <div className="text-sm font-semibold">{garment.garmentType.name}</div>
                 <div className="text-xs text-slate-600">{garment.barcode}</div>
                 <input name="deductionAmount" type="number" min="0" step="1" placeholder="Сумма удержания" required />
                 <button className="bg-panel">Не возвращено</button>
@@ -124,7 +124,7 @@ function ItemsTable({ items, otherDirection, editable }: { items: any[]; otherDi
               <td>
                 <div className="font-semibold">{item.garment.employee.fullName}</div>
                 <div className="text-sm text-slate-600">
-                  {item.garment.label || item.garment.garmentType.name} · {item.garment.barcode}
+                  {item.garment.garmentType.name} · {item.garment.barcode}
                   {Number(item.deductionAmount) > 0 ? ` · ${money(item.deductionAmount)}` : ""}
                 </div>
               </td>

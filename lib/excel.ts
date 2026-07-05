@@ -82,7 +82,7 @@ export async function generateReturnExcel(operationId: string) {
 }
 
 function garmentName(garment: { employee: { fullName: string }; garmentType: { name: string }; label: string | null }) {
-  return `${garment.employee.fullName}, ${garment.label || garment.garmentType.name}`;
+  return `${garment.employee.fullName}, ${garment.garmentType.name}`;
 }
 
 function setupLaundrySheet(ws: ExcelJS.Worksheet, operation: any) {
