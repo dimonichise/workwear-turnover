@@ -42,7 +42,10 @@ export default async function GarmentsPage() {
               return (
                 <tr key={garment.id} className={delayed ? "delayed-row" : undefined}>
                   <td className="font-semibold">{garment.barcode}</td>
-                  <td>{garment.label || garment.garmentType.name}</td>
+                  <td>
+                    <div className="font-semibold">{garment.garmentType.name}</div>
+                    {garment.label && <div className="text-sm text-slate-600">{garment.label}</div>}
+                  </td>
                   <td>{garment.employee.fullName}</td>
                   <td>{garment.station.name}</td>
                   <td>{delayed ? "задержка" : statusNames[garment.status]}</td>

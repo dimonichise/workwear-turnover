@@ -56,7 +56,10 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
             ) : (
               employee.garments.map((garment) => (
                 <tr key={garment.id}>
-                  <td>{garment.label || garment.garmentType.name}</td>
+                  <td>
+                    <div className="font-semibold">{garment.garmentType.name}</div>
+                    {garment.label && <div className="text-sm text-slate-600">{garment.label}</div>}
+                  </td>
                   <td>{garment.barcode}</td>
                   <td>{statusNames[garment.status]}</td>
                 </tr>
