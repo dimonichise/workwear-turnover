@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BrowserMultiFormatReader } from "@zxing/browser";
 import { Camera, Keyboard } from "lucide-react";
+import { createFastBarcodeReader, fastScannerConstraints } from "@/components/barcodeScanner";
 
 export function BarcodeScannerInput({ defaultValue = "" }: { defaultValue?: string }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -12,11 +12,11 @@ export function BarcodeScannerInput({ defaultValue = "" }: { defaultValue?: stri
 
   useEffect(() => {
     if (!camera || !videoRef.current) return;
-    const reader = new BrowserMultiFormatReader();
+    const reader = createFastBarcodeReader();
     let controls: { stop: () => void } | undefined;
     let stopped = false;
     reader
-      .decodeFromVideoDevice(undefined, videoRef.current, (result) => {
+      .decodeFromConstraints(fastScannerConstraints, videoRef.current, (result) => {
         if (result && !stopped) {
           stopped = true;
           controls?.stop();
