@@ -119,6 +119,9 @@ export async function deleteOperationItem(params: {
 
   await prisma.$transaction(async (tx) => {
     await tx.operationItem.delete({ where: { id: item.id } });
+    if (item.operation.type === OperationType.laundry) {
+      await tx.garment.update({ where: { id: item.garmentId }, data: { status: GarmentStatus.with_employee } });
+    }
     await resetGeneratedExcel(tx, item.operationId);
   });
 }
