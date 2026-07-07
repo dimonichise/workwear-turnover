@@ -28,6 +28,8 @@ export default async function NewGarmentPage({ searchParams }: { searchParams: P
       <form action="/api/garments" method="post" className="panel space-y-4 p-4">
         <input type="hidden" name="redirectTo" value={query.redirectTo || "/garments"} />
         <input type="hidden" name="status" value={query.status || "with_employee"} />
+        {query.operationId && <input type="hidden" name="operationId" value={query.operationId} />}
+        {query.direction && <input type="hidden" name="direction" value={query.direction} />}
         <BarcodeScannerInput defaultValue={query.barcode || ""} />
         <label className="block space-y-1 text-sm">
           <span>СТО</span>

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GarmentStatus } from "@prisma/client";
+import { GarmentStatus, ItemDirection } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { assertEmployeeAccess, assertLocalRedirect, assertStationAccess } from "@/lib/access";
 import { redirectTo as redirectResponse } from "@/lib/http";
+import { addGarmentToOperation } from "@/lib/operation";
 
 export async function GET() {
   const user = await requireUser();
@@ -54,5 +55,15 @@ export async function POST(req: NextRequest) {
       comment: "Первичное добавление изделия"
     }
   });
+  const operationId = String(form.get("operationId") || "");
+  const direction = String(form.get("direction") || "") as ItemDirection;
+  if (operationId && Object.values(ItemDirection).includes(direction)) {
+    await addGarmentToOperation({
+      operationId,
+      barcode: garment.barcode,
+      direction,
+      user
+    });
+  }
   return redirectResponse(redirectTo);
 }
