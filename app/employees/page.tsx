@@ -4,13 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { statusNames } from "@/lib/format";
 import { employeePositions } from "@/lib/positions";
+import { stationScope } from "@/lib/access";
 
 export default async function EmployeesPage() {
   const user = await requireUser();
   if (user.role !== "admin") redirect("/");
   const [employees, stations] = await Promise.all([
     prisma.employee.findMany({
-      where: { stationId: user.role === "admin" ? undefined : user.stationId || undefined },
+      where: { stationId: stationScope(user) },
       include: { station: true, _count: { select: { garments: true } } },
       orderBy: { fullName: "asc" }
     }),

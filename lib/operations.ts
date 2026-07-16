@@ -1,10 +1,11 @@
 import { OperationStatus, OperationType, User } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { stationScope } from "@/lib/access";
 
 type ScopedUser = Pick<User, "role" | "stationId">;
 
 export async function getVisibleOperations(user: ScopedUser) {
-  const stationFilter = user.role === "admin" ? undefined : user.stationId || undefined;
+  const stationFilter = stationScope(user);
   const typeFilter = user.role === "admin" ? undefined : OperationType.laundry;
   const [sent, active] = await Promise.all([
     prisma.operation.findMany({

@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin, requireUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { redirectTo } from "@/lib/http";
+import { assertGlobalAdmin, stationScope } from "@/lib/access";
 
 export async function GET() {
   const user = await requireUser();
   return NextResponse.json(
     await prisma.station.findMany({
-      where: user.role === "admin" ? undefined : { id: user.stationId || undefined },
+      where: { id: stationScope(user) },
       orderBy: { name: "asc" }
     })
   );
@@ -15,7 +16,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const user = await requireUser();
-  requireAdmin(user.role);
+  assertGlobalAdmin(user);
   if (req.headers.get("content-type")?.includes("application/json")) {
     const data = await req.json();
     return NextResponse.json(

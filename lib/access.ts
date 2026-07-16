@@ -1,13 +1,14 @@
 import { Employee, Garment, Operation, OperationStatus, OperationType, User } from "@prisma/client";
 
-type ScopedUser = Pick<User, "id" | "role" | "stationId">;
+type ScopedUser = Pick<User, "role" | "stationId">;
 
 export function assertAppSecret() {
   return;
 }
 
 export function canUseStation(user: ScopedUser, stationId: string | null | undefined) {
-  return user.role === "admin" || (!!stationId && stationId === user.stationId);
+  if (user.role === "admin" && !user.stationId) return true;
+  return !!stationId && stationId === user.stationId;
 }
 
 export function assertStationAccess(user: ScopedUser, stationId: string | null | undefined) {
@@ -24,6 +25,20 @@ export function assertAdmin(user: ScopedUser) {
 
 export function isAdmin(user: ScopedUser) {
   return user.role === "admin";
+}
+
+export function isGlobalAdmin(user: ScopedUser) {
+  return user.role === "admin" && !user.stationId;
+}
+
+export function assertGlobalAdmin(user: ScopedUser) {
+  if (!isGlobalAdmin(user)) {
+    throw new Response("Недостаточно прав", { status: 403 });
+  }
+}
+
+export function stationScope(user: ScopedUser) {
+  return isGlobalAdmin(user) ? undefined : user.stationId || "__no_station__";
 }
 
 export function assertEmployeeAccess(user: ScopedUser, employee: Pick<Employee, "stationId">) {

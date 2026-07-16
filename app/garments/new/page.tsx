@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { BarcodeScannerInput } from "@/components/BarcodeScannerInput";
+import { stationScope } from "@/lib/access";
 
 export default async function NewGarmentPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const user = await requireUser();
@@ -9,14 +10,14 @@ export default async function NewGarmentPage({ searchParams }: { searchParams: P
     prisma.station.findMany({
       where: {
         isActive: true,
-        id: user.role === "admin" ? undefined : user.stationId || undefined
+        id: stationScope(user)
       },
       orderBy: { name: "asc" }
     }),
     prisma.employee.findMany({
       where: {
         status: { not: "archived" },
-        stationId: user.role === "admin" ? undefined : user.stationId || undefined
+        stationId: stationScope(user)
       },
       orderBy: { fullName: "asc" }
     }),

@@ -3,11 +3,12 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { money, ruDate } from "@/lib/format";
 import { isLaundryDelayed, laundryDays } from "@/lib/laundryDelay";
+import { stationScope } from "@/lib/access";
 
 export default async function AnalyticsPage() {
   const user = await requireUser();
   if (user.role !== "admin") redirect("/");
-  const stationWhere = { stationId: user.role === "admin" ? undefined : user.stationId || undefined };
+  const stationWhere = { stationId: stationScope(user) };
   const [byEmployees, inLaundry, returns] = await Promise.all([
     prisma.employee.findMany({
       where: stationWhere,

@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { assertAdmin } from "@/lib/access";
+import { assertAdmin, stationScope } from "@/lib/access";
 import { isLaundryDelayed } from "@/lib/laundryDelay";
 
 export async function GET() {
   const user = await requireUser();
   assertAdmin(user);
-  const stationWhere = { stationId: user.role === "admin" ? undefined : user.stationId || undefined };
+  const stationWhere = { stationId: stationScope(user) };
   const [total, withEmployee, inLaundry, delayedLaundryCandidates, deductions] = await Promise.all([
     prisma.garment.count({ where: stationWhere }),
     prisma.garment.count({ where: { status: "with_employee", ...stationWhere } }),

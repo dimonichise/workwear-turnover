@@ -5,10 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { money } from "@/lib/format";
 import { isLaundryDelayed } from "@/lib/laundryDelay";
+import { stationScope } from "@/lib/access";
 
 export default async function HomePage() {
   const user = await requireUser();
-  const stationWhere = { stationId: user.role === "admin" ? undefined : user.stationId || undefined };
+  const stationWhere = { stationId: stationScope(user) };
   const [total, withEmployee, inLaundry, delayedLaundryCandidates, deductions] = await Promise.all([
     prisma.garment.count({ where: stationWhere }),
     prisma.garment.count({ where: { status: "with_employee", ...stationWhere } }),

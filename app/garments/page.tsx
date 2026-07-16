@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { statusNames } from "@/lib/format";
 import { isLaundryDelayed } from "@/lib/laundryDelay";
+import { stationScope } from "@/lib/access";
 
 export default async function GarmentsPage() {
   const user = await requireUser();
   const garments = await prisma.garment.findMany({
-    where: { stationId: user.role === "admin" ? undefined : user.stationId || undefined },
+    where: { stationId: stationScope(user) },
     include: {
       station: true,
       employee: true,

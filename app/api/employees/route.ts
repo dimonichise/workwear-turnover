@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { assertAdmin, assertStationAccess } from "@/lib/access";
+import { assertAdmin, assertStationAccess, stationScope } from "@/lib/access";
 import { redirectTo } from "@/lib/http";
 import { normalizeEmployeePosition } from "@/lib/positions";
 
 export async function GET() {
   const user = await requireUser();
-  const where = user.role === "admin" ? {} : { stationId: user.stationId || undefined };
+  const where = { stationId: stationScope(user) };
   return NextResponse.json(await prisma.employee.findMany({ where, include: { station: true }, orderBy: { fullName: "asc" } }));
 }
 

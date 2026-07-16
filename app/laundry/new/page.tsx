@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { stationScope } from "@/lib/access";
 
 export default async function NewLaundryPage() {
   const user = await requireUser();
   const stations = await prisma.station.findMany({
     where: {
       isActive: true,
-      id: user.role === "admin" ? undefined : user.stationId || undefined
+      id: stationScope(user)
     },
     orderBy: { name: "asc" }
   });

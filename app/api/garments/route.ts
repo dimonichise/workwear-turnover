@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { GarmentStatus, ItemDirection } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { assertEmployeeAccess, assertLocalRedirect, assertStationAccess } from "@/lib/access";
+import { assertEmployeeAccess, assertLocalRedirect, assertStationAccess, stationScope } from "@/lib/access";
 import { redirectTo as redirectResponse } from "@/lib/http";
 import { addGarmentToOperation } from "@/lib/operation";
 
 export async function GET() {
   const user = await requireUser();
-  const where = user.role === "admin" ? {} : { stationId: user.stationId || undefined };
+  const where = { stationId: stationScope(user) };
   return NextResponse.json(
     await prisma.garment.findMany({
       where,
