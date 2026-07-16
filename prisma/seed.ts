@@ -22,13 +22,16 @@ async function main() {
   const password = process.env.ADMIN_PASSWORD || "change_me";
   await prisma.user.upsert({
     where: { email },
-    update: {},
+    update: {
+      role: UserRole.admin,
+      stationId: null
+    },
     create: {
       email,
       passwordHash: await bcrypt.hash(password, 12),
       fullName: process.env.ADMIN_NAME || "Администратор",
       role: UserRole.admin,
-      stationId: station.id
+      stationId: null
     }
   });
 }
