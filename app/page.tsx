@@ -37,12 +37,12 @@ export default async function HomePage() {
         ] as const)
       : [])
   ] as const;
-  const metrics: { label: string; value: string | number; icon: LucideIcon; iconClass: string }[] = [
-    { label: "Всего", value: total, icon: Box, iconClass: "icon-soft-teal" },
-    { label: "У сотрудников", value: withEmployee, icon: UserCheck, iconClass: "icon-soft-green" },
-    { label: "В стирке", value: inLaundry, icon: ClipboardList, iconClass: "icon-soft-blue" },
-    { label: "Задержка", value: delayedLaundry, icon: AlertTriangle, iconClass: "icon-soft-red" },
-    { label: "Удержания", value: money(deductions._sum.deductionAmount), icon: WalletCards, iconClass: "icon-soft-rose" }
+  const metrics: { label: string; value: string | number; icon: LucideIcon; iconClass: string; href: string }[] = [
+    { label: "Всего", value: total, icon: Box, iconClass: "icon-soft-teal", href: "/garments" },
+    { label: "У сотрудников", value: withEmployee, icon: UserCheck, iconClass: "icon-soft-green", href: "/garments?status=with_employee" },
+    { label: "В стирке", value: inLaundry, icon: ClipboardList, iconClass: "icon-soft-blue", href: "/garments?status=in_laundry" },
+    { label: "Задержка", value: delayedLaundry, icon: AlertTriangle, iconClass: "icon-soft-red", href: "/garments?filter=delayed" },
+    { label: "Удержания", value: money(deductions._sum.deductionAmount), icon: WalletCards, iconClass: "icon-soft-rose", href: "/analytics" }
   ];
 
   return (
@@ -58,14 +58,14 @@ export default async function HomePage() {
         </Link>
       </section>
       <section className="dashboard-metrics grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {metrics.map(({ label, value, icon: Icon, iconClass }) => (
-          <div key={label} className="metric-card">
+        {metrics.map(({ label, value, icon: Icon, iconClass, href }) => (
+          <Link key={label} href={href} className="metric-card" aria-label={`${label}: ${value}`}>
             <span className={`metric-icon ${iconClass}`}>
               <Icon size={20} />
             </span>
             <div className="mt-5 text-3xl font-bold tracking-tight">{value}</div>
             <div className="mt-1 text-sm text-slate-600">{label}</div>
-          </div>
+          </Link>
         ))}
       </section>
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

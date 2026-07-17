@@ -195,13 +195,16 @@ button:active,
 
 .metric-card {
   position: relative;
+  display: block;
   overflow: hidden;
   min-height: 150px;
   padding: 24px 20px 20px;
+  color: inherit;
   background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
   border: 1px solid #edf0f2;
   border-radius: 8px;
   box-shadow: 0 18px 34px rgba(15, 23, 42, 0.08), 0 2px 5px rgba(15, 23, 42, 0.04);
+  cursor: pointer;
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
   will-change: transform;
 }
@@ -216,10 +219,11 @@ button:active,
 }
 
 .metric-card:hover,
-.metric-card:focus-within {
+.metric-card:focus-visible {
   border-color: #dce6e7;
   box-shadow: 0 24px 42px rgba(15, 23, 42, 0.11), 0 4px 10px rgba(15, 23, 42, 0.05);
   transform: translateY(-2px);
+  outline: none;
 }
 
 .metric-icon {
