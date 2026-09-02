@@ -14,7 +14,7 @@ export function AutoUploadFileInput({
   action,
   title,
   accept = "image/*",
-  capture = "environment"
+  capture
 }: AutoUploadFileInputProps) {
   const formRef = useRef<HTMLFormElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -37,7 +37,7 @@ export function AutoUploadFileInput({
         name="file"
         type="file"
         accept={accept}
-        capture={capture}
+        {...(capture ? { capture } : {})}
         required
         className="sr-only"
         onChange={handleChange}
