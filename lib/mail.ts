@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { fileDate } from "@/lib/format";
 import { finalizeOperationGarmentStatuses } from "@/lib/operation";
 
-export async function sendOperationEmail(operationId: string) {
+export async function sendOperationEmail(operationId: string, recipientOverride?: string) {
   const operation = await prisma.operation.findUnique({
     where: { id: operationId },
     include: { station: true, attachments: true }
@@ -15,7 +15,7 @@ export async function sendOperationEmail(operationId: string) {
     operation.type === "laundry" ? ["excel_detail", "act_photo"] : ["excel_detail", "act_photo", "return_photo"];
   const missing = required.filter((type) => !operation.attachments.some((item) => item.fileType === type));
   if (missing.length) throw new Error(`Не хватает вложений: ${missing.join(", ")}`);
-  const recipient = operation.station.mailTo || process.env.MAIL_TO;
+  const recipient = recipientOverride || operation.station.mailTo || process.env.MAIL_TO;
   if (!recipient) throw new Error("Не настроена почта получателя для СТО");
 
   const transporter = nodemailer.createTransport({

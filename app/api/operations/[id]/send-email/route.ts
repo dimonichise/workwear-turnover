@@ -13,8 +13,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   assertOperationAccess(user, operation);
   if (operation.type === "firing_return") assertAdmin(user);
   if (operation.status === "sent") return NextResponse.json({ error: "Операция уже проведена" }, { status: 400 });
+  const form = await req.formData();
+  const mailTo = String(form.get("mailTo") || "").trim();
+  if (mailTo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mailTo)) {
+    return NextResponse.json({ error: "Некорректный email получателя" }, { status: 400 });
+  }
   try {
-    await sendOperationEmail(id);
+    await sendOperationEmail(id, mailTo || undefined);
     return redirectTo(`/operations/${id}`);
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Не удалось отправить письмо" }, { status: 400 });

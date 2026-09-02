@@ -33,6 +33,7 @@ export default async function OperationPage({ params }: { params: Promise<{ id: 
   const notReturned = operation.items.filter((item) => item.direction === "not_returned");
   const remaining = operation.employee?.garments.filter((garment) => !operation.items.some((item) => item.garmentId === garment.id)) || [];
   const editable = operation.status !== "sent" && operation.status !== "cancelled";
+  const defaultMailTo = operation.station.mailTo || process.env.MAIL_TO || "";
 
   return (
     <main className="shell space-y-5">
@@ -97,7 +98,11 @@ export default async function OperationPage({ params }: { params: Promise<{ id: 
           <form action={`/api/operations/${operation.id}/${operation.type === "laundry" ? "generate-excel" : "generate-return-excel"}`} method="post">
             <button className="w-full bg-panel">Сформировать Excel</button>
           </form>
-          <form action={`/api/operations/${operation.id}/send-email`} method="post">
+          <form action={`/api/operations/${operation.id}/send-email`} method="post" className="space-y-2">
+            <label className="block space-y-1 text-sm">
+              <span>Получатель письма</span>
+              <input name="mailTo" type="email" defaultValue={defaultMailTo} required />
+            </label>
             <button className="w-full bg-brand text-white">Отправить письмо</button>
           </form>
           <ul className="text-sm text-slate-700">
