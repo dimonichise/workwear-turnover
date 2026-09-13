@@ -32,7 +32,7 @@ services:
     environment:
       POSTGRES_DB: workwear
       POSTGRES_USER: workwear
-      POSTGRES_PASSWORD: change_me
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
