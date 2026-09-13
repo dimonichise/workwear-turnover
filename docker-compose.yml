@@ -1,6 +1,6 @@
 services:
   app:
-    build: .
+    image: ${WORKWEAR_IMAGE:?WORKWEAR_IMAGE is required}
     restart: always
     init: true
     env_file:
