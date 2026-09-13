@@ -2,6 +2,8 @@
 
 Инструкция рассчитана на домен `specod.aiautomatizaciy.ru`, путь проекта `/opt/workwear-app` и запуск через Docker Compose.
 
+Перед публичным релизом обязателен закрытый dependency gate из [`SECURITY_AUDIT.md`](SECURITY_AUDIT.md).
+
 ## 1. Установка Docker
 
 ```bash
@@ -192,6 +194,36 @@ docker system df
 ```
 
 Не используйте `docker system prune --volumes`: volume PostgreSQL хранит базу приложения.
+
+## 8. Резервное копирование
+
+Production-данные включают PostgreSQL и каталог вложений `storage`. Проверенный backup обоих источников создаётся одной командой:
+
+```bash
+sudo ./deploy/backup-production-data.sh
+```
+
+Backup записывается атомарно в `/var/backups/workwear/<UTC timestamp>/`. Перед публикацией результата скрипт проверяет структуру `pg_dump`, целостность архива вложений и SHA-256. По умолчанию хранятся копии за 14 дней.
+
+Установка ежедневного задания и ротации его журнала:
+
+```bash
+sudo install -m 0644 deploy/workwear-backup.cron /etc/cron.d/workwear-backup
+sudo install -m 0644 deploy/workwear-backup.logrotate /etc/logrotate.d/workwear-backup
+sudo ./deploy/backup-production-data.sh
+```
+
+Контроль последней копии:
+
+```bash
+latest="$(find /var/backups/workwear -mindepth 1 -maxdepth 1 -type d -name '20*' | sort | tail -1)"
+cd "$latest"
+sha256sum --check SHA256SUMS
+docker compose exec -T postgres pg_restore --list < postgres.dump > /dev/null
+tar -tzf storage.tar.gz > /dev/null
+```
+
+Восстановление всегда выполняется вручную в отдельное окно: сначала остановить `app`, создать страховочную копию текущего состояния, восстановить PostgreSQL через `pg_restore --clean --if-exists` и каталог `storage`, затем запустить приложение и пройти smoke test.
 
 Полная остановка:
 
