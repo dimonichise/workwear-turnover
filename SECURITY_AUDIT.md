@@ -38,4 +38,6 @@ npm audit --omit=dev
 
 Конфигурация изменена: Compose требует `POSTGRES_PASSWORD` из production `.env` и больше не содержит пароль в репозитории.
 
-Статус: **CONFIG FIXED — production credential rotation выполняется при развёртывании**.
+13 сентября 2026 года перед ротацией создана и проверена резервная копия PostgreSQL и файлов. Для роли `workwear` установлен новый случайный пароль, production `.env` обновлён с правами `0600`, контейнеры базы и приложения пересозданы. Health check приложения и базы, HTTP smoke test и пробное соединение Prisma прошли успешно; значение секрета не выводилось в журнал и не сохранялось в Git.
+
+Статус: **CLOSED — production credential rotated and verified**.
