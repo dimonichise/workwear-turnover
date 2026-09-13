@@ -30,15 +30,23 @@ npm run dev
 
 ## Развёртывание на VPS
 
+Production-релиз выполняется через одну точку входа:
+
 ```bash
-git clone <repo-url>
-cd <project-folder>
-cp .env.example .env
-nano .env
-docker compose up -d --build
-docker compose exec app npx prisma migrate deploy
-docker compose exec app npx prisma db seed
+cd /opt/workwear-app
+git pull --ff-only
+./deploy/deploy-production.sh deploy
 ```
+
+Скрипт проверяет защищённый `.env` и Compose, блокирует параллельный deploy, создаёт и валидирует резервную копию PostgreSQL и `storage`, собирает новый образ при работающей старой версии, применяет миграции отдельным контейнером, переключает приложение, проверяет локальный и внешний health-check и соединение Prisma. При ошибке после переключения автоматически возвращается прежний образ; резервная копия остаётся для ручного восстановления данных.
+
+Проверка уже работающего production без пересборки:
+
+```bash
+./deploy/deploy-production.sh verify
+```
+
+Первоначальное развёртывание на новом сервере выполняется отдельно: создать `.env` из `.env.example`, установить уникальные секреты, поднять PostgreSQL, применить миграции и только затем создать администратора. `prisma db seed` не входит в обычный production-релиз.
 
 Для Nginx используйте `nginx.conf.example`, затем выпустите SSL:
 
