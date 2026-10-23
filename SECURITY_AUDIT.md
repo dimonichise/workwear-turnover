@@ -41,3 +41,30 @@ npm audit --omit=dev
 13 сентября 2026 года перед ротацией создана и проверена резервная копия PostgreSQL и файлов. Для роли `workwear` установлен новый случайный пароль, production `.env` обновлён с правами `0600`, контейнеры базы и приложения пересозданы. Health check приложения и базы, HTTP smoke test и пробное соединение Prisma прошли успешно; значение секрета не выводилось в журнал и не сохранялось в Git.
 
 Статус: **CLOSED — production credential rotated and verified**.
+
+# Dependency Release Review: 2026-10-23
+
+The interface release updates Next.js and eslint-config-next to 16.4.2,
+Nodemailer to 10.2.1, and compatible transitive security fixes in the lockfile.
+ExcelJS retains its existing version and report implementation; its UUID
+dependency is pinned to the fixed CommonJS-compatible 11.1.1 release. Report
+generation and email composition must pass regression checks before publishing.
+
+Tailwind remains on its existing v3 branch to preserve browser compatibility
+and avoid changing the approved layouts.
+
+## Unfixed Development-Only Advisory
+
+`GHSA-vfj7-8cjw-p6xm` affects the braces package used by Tailwind and Next.js
+ESLint tooling to process local repository patterns. There is no patched braces
+release at review time. These tools never process application user input and
+are removed from the production image by `npm prune --omit=dev`.
+
+`npm run audit:ci` permits only this exact advisory and its propagated findings
+when **every affected installed node** is marked development-only in the
+lockfile. It fails on new high/critical advisories, critical escalation, missing
+metadata, and audit/network errors. Unit tests enforce these restrictions.
+The independent `npm audit --omit=dev --audit-level=high` check remains mandatory.
+Reassess and remove the exception when a patched upstream release is available.
+
+Reference: https://github.com/advisories/GHSA-vfj7-8cjw-p6xm
