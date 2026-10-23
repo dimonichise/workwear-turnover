@@ -1,50 +1,96 @@
+import { ArrowUpRight } from "lucide-react";
+import {
+  DataTable,
+  DataCell,
+  StatusBadge,
+  EmptyState,
+} from "@/components/DataTable";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
-import { ruDate, statusNames } from "@/lib/format";
+import { ruDate } from "@/lib/format";
 import { getVisibleOperations } from "@/lib/operations";
 
 export default async function OperationsPage() {
   const user = await requireUser();
   const operations = await getVisibleOperations(user);
   return (
-    <main className="shell space-y-5">
-      <h1 className="text-2xl font-bold">История операций</h1>
-      <section className="panel table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Дата</th>
-              <th>Тип</th>
-              <th>СТО</th>
-              <th>Сотрудник</th>
-              <th>Позиции</th>
-              <th>Статус</th>
-              <th>Документ</th>
+    <main className="shell list-page">
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">Документы</p>
+          <h1 className="page-title">История операций</h1>
+          <p className="page-count">Документов: {operations.length}</p>
+        </div>
+      </div>
+      {operations.length === 0 ? (
+        <EmptyState title="Документов пока нет." />
+      ) : (
+        <DataTable caption="История операций">
+          <thead role="rowgroup">
+            <tr role="row">
+              <th scope="col" role="columnheader">
+                Дата
+              </th>
+              <th scope="col" role="columnheader">
+                Тип
+              </th>
+              <th scope="col" role="columnheader">
+                СТО
+              </th>
+              <th scope="col" role="columnheader">
+                Сотрудник
+              </th>
+              <th scope="col" role="columnheader">
+                Позиции
+              </th>
+              <th scope="col" role="columnheader">
+                Статус
+              </th>
+              <th scope="col" role="columnheader">
+                Документ
+              </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody role="rowgroup">
             {operations.map((operation) => (
-              <tr key={operation.id}>
-                <td>
-                  <Link className="font-semibold text-brand" href={`/operations/${operation.id}`}>
+              <tr role="row" key={operation.id}>
+                <DataCell label="Дата" primary>
+                  <Link
+                    className="font-semibold text-brand"
+                    href={`/operations/${operation.id}`}
+                  >
                     {ruDate(operation.operationDate)}
                   </Link>
-                </td>
-                <td>{operation.type === "laundry" ? "Стирка" : "Возврат"}</td>
-                <td>{operation.station.name}</td>
-                <td>{operation.employee?.fullName || ""}</td>
-                <td>{operation._count.items}</td>
-                <td>{statusNames[operation.status] || operation.status}</td>
-                <td>
-                  <Link className="button inline-flex bg-panel text-brand" href={`/operations/${operation.id}`}>
-                    Открыть
+                </DataCell>
+                <DataCell label="Тип">
+                  {operation.type === "laundry" ? "Стирка" : "Возврат"}
+                </DataCell>
+                <DataCell label="СТО">{operation.station.name}</DataCell>
+                <DataCell label="Сотрудник">
+                  {operation.employee?.fullName || "—"}
+                </DataCell>
+                <DataCell label="Позиции">
+                  <span className="number-emphasis">
+                    {operation._count.items}
+                  </span>
+                </DataCell>
+                <DataCell label="Статус">
+                  <StatusBadge status={operation.status} />
+                </DataCell>
+                <DataCell label="Документ" className="data-actions">
+                  <Link
+                    className="text-link"
+                    href={`/operations/${operation.id}`}
+                  >
+                    Открыть документ
+                    <ArrowUpRight size={16} />
                   </Link>
-                </td>
+                </DataCell>
               </tr>
             ))}
           </tbody>
-        </table>
-      </section>
+        </DataTable>
+      )}
     </main>
   );
 }

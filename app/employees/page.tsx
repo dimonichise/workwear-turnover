@@ -1,8 +1,14 @@
+import { ArrowRight, Plus, UserPlus } from "lucide-react";
+import {
+  DataTable,
+  DataCell,
+  StatusBadge,
+  EmptyState,
+} from "@/components/DataTable";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
-import { statusNames } from "@/lib/format";
 import { employeePositions } from "@/lib/positions";
 import { stationScope } from "@/lib/access";
 
@@ -13,69 +19,127 @@ export default async function EmployeesPage() {
     prisma.employee.findMany({
       where: { stationId: stationScope(user) },
       include: { station: true, _count: { select: { garments: true } } },
-      orderBy: { fullName: "asc" }
+      orderBy: { fullName: "asc" },
     }),
-    prisma.station.findMany({ where: { isActive: true }, orderBy: { name: "asc" } })
+    prisma.station.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+    }),
   ]);
   return (
-    <main className="shell space-y-5">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Сотрудники</h1>
+    <main className="shell list-page">
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">{user.station?.name || "Все СТО"}</p>
+          <h1 className="page-title">Сотрудники</h1>
+          <p className="page-count">Всего: {employees.length}</p>
+        </div>
       </div>
-      <form action="/api/employees" method="post" className="panel grid gap-3 p-4 md:grid-cols-5">
-        <input name="fullName" placeholder="ФИО" required className="md:col-span-2" />
-        <select name="position" defaultValue="" required>
-          <option value="" disabled>
-            Должность
-          </option>
-          {employeePositions.map((position) => (
-            <option key={position} value={position}>
-              {position}
-            </option>
-          ))}
-        </select>
-        <select name="stationId" defaultValue={user.stationId || stations[0]?.id}>
-          {stations.map((station) => (
-            <option key={station.id} value={station.id}>
-              {station.name}
-            </option>
-          ))}
-        </select>
-        <button className="bg-brand text-white">Добавить</button>
-      </form>
-      <section className="panel table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Сотрудник</th>
-              <th>СТО</th>
-              <th>Статус</th>
-              <th>Изделий</th>
-              <th>Карточка</th>
+      <details className="create-disclosure">
+        <summary>
+          <UserPlus size={18} />
+          <span>Добавить сотрудника</span>
+          <Plus className="disclosure-plus" size={18} />
+        </summary>
+        <form
+          action="/api/employees"
+          method="post"
+          className="employee-create-grid"
+        >
+          <label className="form-field">
+            <span>ФИО</span>
+            <input name="fullName" placeholder="ФИО" required />
+          </label>
+          <label className="form-field">
+            <span>Должность</span>
+            <select name="position" defaultValue="" required>
+              <option value="" disabled>
+                Должность
+              </option>
+              {employeePositions.map((position) => (
+                <option key={position} value={position}>
+                  {position}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="form-field">
+            <span>СТО</span>
+            <select
+              name="stationId"
+              defaultValue={user.stationId || stations[0]?.id}
+            >
+              {stations.map((station) => (
+                <option key={station.id} value={station.id}>
+                  {station.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="button-primary">
+            <Plus size={18} />
+            Добавить
+          </button>
+        </form>
+      </details>
+      {employees.length === 0 ? (
+        <EmptyState title="Сотрудников пока нет." />
+      ) : (
+        <DataTable caption="Сотрудники">
+          <thead role="rowgroup">
+            <tr role="row">
+              <th scope="col" role="columnheader">
+                Сотрудник
+              </th>
+              <th scope="col" role="columnheader">
+                СТО
+              </th>
+              <th scope="col" role="columnheader">
+                Статус
+              </th>
+              <th scope="col" role="columnheader">
+                Изделий
+              </th>
+              <th scope="col" role="columnheader">
+                Карточка
+              </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody role="rowgroup">
             {employees.map((employee) => (
-              <tr key={employee.id}>
-                <td>
-                  <Link className="font-semibold text-brand" href={`/employees/${employee.id}`}>
+              <tr role="row" key={employee.id}>
+                <DataCell label="Сотрудник" primary>
+                  <Link
+                    className="font-semibold text-brand"
+                    href={`/employees/${employee.id}`}
+                  >
                     {employee.fullName}
                   </Link>
-                  <div className="text-sm text-slate-600">{employee.position}</div>
-                </td>
-                <td>{employee.station.name}</td>
-                <td>{statusNames[employee.status]}</td>
-                <td>{employee._count.garments}</td>
-                <td>
-                  <Link className="button inline-flex bg-panel text-brand" href={`/employees/${employee.id}`}>
+                  <div className="cell-secondary">{employee.position}</div>
+                </DataCell>
+                <DataCell label="СТО">{employee.station.name}</DataCell>
+                <DataCell label="Статус">
+                  <StatusBadge status={employee.status} />
+                </DataCell>
+                <DataCell label="Изделий">
+                  <span className="number-emphasis">
+                    {employee._count.garments}
+                  </span>
+                </DataCell>
+                <DataCell label="Карточка" className="data-actions">
+                  <Link
+                    className="text-link"
+                    href={`/employees/${employee.id}`}
+                  >
                     Открыть
+                    <ArrowRight size={16} />
                   </Link>
-                </td>
+                </DataCell>
               </tr>
             ))}
           </tbody>
-        </table>
-      </section>
+        </DataTable>
+      )}
     </main>
   );
 }

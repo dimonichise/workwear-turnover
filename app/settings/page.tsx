@@ -1,3 +1,6 @@
+import { Building2, Plus, Save, UserPlus } from "lucide-react";
+import { SectionTabs } from "@/components/SectionTabs";
+import { DataTable, DataCell, EmptyState } from "@/components/DataTable";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
@@ -8,124 +11,285 @@ export default async function SettingsPage() {
   if (user.role !== "admin") redirect("/");
   const globalAdmin = isGlobalAdmin(user);
   const [stations, users] = await Promise.all([
-    prisma.station.findMany({ where: { id: stationScope(user) }, orderBy: { name: "asc" } }),
-    prisma.user.findMany({ where: { stationId: stationScope(user) }, include: { station: true }, orderBy: { email: "asc" } })
+    prisma.station.findMany({
+      where: { id: stationScope(user) },
+      orderBy: { name: "asc" },
+    }),
+    prisma.user.findMany({
+      where: { stationId: stationScope(user) },
+      include: { station: true },
+      orderBy: { email: "asc" },
+    }),
   ]);
   return (
-    <main className="shell space-y-5">
-      <h1 className="text-2xl font-bold">Настройки</h1>
-      <section className="grid gap-4 lg:grid-cols-2">
-        {globalAdmin && (
-          <form action="/api/stations" method="post" className="panel space-y-3 p-4">
-            <h2 className="text-lg font-bold">Новая СТО</h2>
-            <label className="block space-y-1 text-sm">
-              <span>Название</span>
-              <input name="name" required placeholder="Ясенево" />
-            </label>
-            <label className="block space-y-1 text-sm">
-              <span>Адрес</span>
-              <input name="address" />
-            </label>
-            <label className="block space-y-1 text-sm">
-              <span>Почта для отчетов</span>
-              <input name="mailTo" type="email" placeholder="sto@example.com" />
-            </label>
-            <button className="bg-brand text-white">Создать СТО</button>
-          </form>
-        )}
-
-        <form action="/api/users" method="post" className="panel space-y-3 p-4">
-          <h2 className="text-lg font-bold">Новый пользователь</h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className="block space-y-1 text-sm">
-              <span>Имя</span>
-              <input name="fullName" required />
-            </label>
-            <label className="block space-y-1 text-sm">
-              <span>Email</span>
-              <input name="email" type="email" required />
-            </label>
-            <label className="block space-y-1 text-sm">
-              <span>Пароль</span>
-              <input name="password" type="password" minLength={8} required />
-            </label>
-            <label className="block space-y-1 text-sm">
-              <span>Роль</span>
-              <select name="role" defaultValue="master">
-                <option value="master">Мастер</option>
-                <option value="admin">Администратор</option>
-              </select>
-            </label>
-          </div>
-          <label className="block space-y-1 text-sm">
-            <span>СТО</span>
-            <select name="stationId">
-              {globalAdmin && <option value="">Все СТО / без привязки</option>}
-              {stations.map((station) => (
-                <option key={station.id} value={station.id}>
-                  {station.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button className="bg-brand text-white">Создать пользователя</button>
-        </form>
-      </section>
-      <section className="space-y-3">
-        <h2 className="text-lg font-bold">СТО</h2>
-        <div className="grid gap-4 lg:grid-cols-2">
-          {stations.map((station) => (
-            <form key={station.id} action={`/api/stations/${station.id}`} method="post" className="panel space-y-3 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="font-bold">{station.name}</h3>
-                  <p className="text-sm text-slate-600">{station.isActive ? "активна" : "неактивна"}</p>
+    <main className="shell list-page">
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">{user.station?.name || "Управление сетью"}</p>
+          <h1 className="page-title">Настройки</h1>
+        </div>
+      </div>
+      <SectionTabs
+        label="Разделы настроек"
+        tabs={[
+          {
+            id: "stations",
+            label: "СТО",
+            count: stations.length,
+            content: (
+              <section className="settings-section">
+                <div className="section-heading">
+                  <h2>Станции технического обслуживания</h2>
+                  <span>Всего: {stations.length}</span>
                 </div>
                 {globalAdmin && (
-                  <label className="flex items-center gap-2 text-sm">
-                    <input name="isActive" type="checkbox" defaultChecked={station.isActive} className="w-auto" />
-                    Активна
-                  </label>
+                  <details className="create-disclosure">
+                    <summary>
+                      <Building2 size={18} />
+                      <span>Добавить СТО</span>
+                      <Plus className="disclosure-plus" size={18} />
+                    </summary>
+                    <form
+                      action="/api/stations"
+                      method="post"
+                      className="settings-create-form"
+                    >
+                      <label className="form-field">
+                        <span>Название</span>
+                        <input name="name" required placeholder="Ясенево" />
+                      </label>
+                      <label className="form-field">
+                        <span>Адрес</span>
+                        <input name="address" />
+                      </label>
+                      <label className="form-field">
+                        <span>Почта для отчетов</span>
+                        <input
+                          name="mailTo"
+                          type="email"
+                          placeholder="sto@example.com"
+                        />
+                      </label>
+                      <div className="form-actions">
+                        <button className="button-primary">
+                          <Plus size={16} />
+                          Создать СТО
+                        </button>
+                      </div>
+                    </form>
+                  </details>
                 )}
-              </div>
-              <label className="block space-y-1 text-sm">
-                <span>Название</span>
-                <input name="name" defaultValue={station.name} required />
-              </label>
-              <label className="block space-y-1 text-sm">
-                <span>Адрес</span>
-                <input name="address" defaultValue={station.address || ""} />
-              </label>
-              <label className="block space-y-1 text-sm">
-                <span>Почта для отчетов</span>
-                <input name="mailTo" type="email" defaultValue={station.mailTo || ""} placeholder="Общая почта из .env" />
-              </label>
-              <button className="bg-panel">Сохранить СТО</button>
-            </form>
-          ))}
-        </div>
-      </section>
-      <section className="panel table-wrap">
-        <h2 className="p-4 text-lg font-bold">Пользователи</h2>
-        <table>
-          <tbody>
-            {users.map((item) => (
-              <tr key={item.id}>
-                <td>{item.fullName}</td>
-                <td>{item.email}</td>
-                <td>{item.role === "admin" ? "Администратор" : "Мастер"}</td>
-                <td>{item.station?.name}</td>
-                <td>
-                  <form action={`/api/users/${item.id}/password`} method="post" className="flex min-w-64 gap-2">
-                    <input name="password" type="password" minLength={8} placeholder="Новый пароль" required />
-                    <button className="bg-panel">Сменить</button>
+                {stations.length === 0 ? (
+                  <EmptyState title="СТО пока нет." />
+                ) : (
+                  <div className="station-editor-grid">
+                    {stations.map((station) => (
+                      <form
+                        key={station.id}
+                        action={`/api/stations/${station.id}`}
+                        method="post"
+                        className="station-editor"
+                      >
+                        <div className="station-editor-heading">
+                          <span className="station-editor-icon">
+                            <Building2 size={20} />
+                          </span>
+                          <div>
+                            <h3>{station.name}</h3>
+                            <span
+                              className={`status-badge ${station.isActive ? "status-active" : "status-archived"}`}
+                            >
+                              {station.isActive ? "активна" : "неактивна"}
+                            </span>
+                          </div>
+                          {globalAdmin && (
+                            <label className="station-active-control">
+                              <input
+                                name="isActive"
+                                type="checkbox"
+                                defaultChecked={station.isActive}
+                                className="w-auto"
+                              />
+                              <span>Активна</span>
+                            </label>
+                          )}
+                        </div>
+                        <label className="form-field">
+                          <span>Название</span>
+                          <input
+                            name="name"
+                            defaultValue={station.name}
+                            required
+                          />
+                        </label>
+                        <label className="form-field">
+                          <span>Адрес</span>
+                          <input
+                            name="address"
+                            defaultValue={station.address || ""}
+                          />
+                        </label>
+                        <label className="form-field">
+                          <span>Почта для отчетов</span>
+                          <input
+                            name="mailTo"
+                            type="email"
+                            defaultValue={station.mailTo || ""}
+                            placeholder="Общая почта для отчётов"
+                          />
+                        </label>
+                        <div className="form-actions">
+                          <button className="bg-panel">
+                            <Save size={16} />
+                            Сохранить СТО
+                          </button>
+                        </div>
+                      </form>
+                    ))}
+                  </div>
+                )}
+              </section>
+            ),
+          },
+          {
+            id: "users",
+            label: "Пользователи",
+            count: users.length,
+            content: (
+              <section className="settings-section">
+                <div className="section-heading">
+                  <h2>Пользователи и доступ</h2>
+                  <span>Всего: {users.length}</span>
+                </div>
+                <details className="create-disclosure">
+                  <summary>
+                    <UserPlus size={18} />
+                    <span>Добавить пользователя</span>
+                    <Plus className="disclosure-plus" size={18} />
+                  </summary>
+                  <form
+                    action="/api/users"
+                    method="post"
+                    className="settings-create-form"
+                  >
+                    <div className="form-grid-two">
+                      <label className="form-field">
+                        <span>Имя</span>
+                        <input name="fullName" required />
+                      </label>
+                      <label className="form-field">
+                        <span>Email</span>
+                        <input name="email" type="email" required />
+                      </label>
+                      <label className="form-field">
+                        <span>Пароль</span>
+                        <input
+                          name="password"
+                          type="password"
+                          minLength={8}
+                          required
+                          autoComplete="new-password"
+                        />
+                      </label>
+                      <label className="form-field">
+                        <span>Роль</span>
+                        <select name="role" defaultValue="master">
+                          <option value="master">Мастер</option>
+                          <option value="admin">Администратор</option>
+                        </select>
+                      </label>
+                    </div>
+                    <label className="form-field">
+                      <span>СТО</span>
+                      <select name="stationId">
+                        {globalAdmin && (
+                          <option value="">Все СТО / без привязки</option>
+                        )}
+                        {stations.map((station) => (
+                          <option key={station.id} value={station.id}>
+                            {station.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <div className="form-actions">
+                      <button className="button-primary">
+                        <Plus size={16} />
+                        Создать пользователя
+                      </button>
+                    </div>
                   </form>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+                </details>
+                {users.length === 0 ? (
+                  <EmptyState title="Пользователей пока нет." />
+                ) : (
+                  <DataTable caption="Пользователи и доступ">
+                    <thead role="rowgroup">
+                      <tr role="row">
+                        <th scope="col" role="columnheader">
+                          Пользователь
+                        </th>
+                        <th scope="col" role="columnheader">
+                          Email
+                        </th>
+                        <th scope="col" role="columnheader">
+                          Роль
+                        </th>
+                        <th scope="col" role="columnheader">
+                          СТО
+                        </th>
+                        <th scope="col" role="columnheader">
+                          Пароль
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody role="rowgroup">
+                      {users.map((item) => (
+                        <tr role="row" key={item.id}>
+                          <DataCell label="Пользователь" primary>
+                            <span className="font-semibold">
+                              {item.fullName}
+                            </span>
+                          </DataCell>
+                          <DataCell label="Email">{item.email}</DataCell>
+                          <DataCell label="Роль">
+                            <span className="role-badge">
+                              {item.role === "admin"
+                                ? "Администратор"
+                                : "Мастер"}
+                            </span>
+                          </DataCell>
+                          <DataCell label="СТО">
+                            {item.station?.name || "Все СТО"}
+                          </DataCell>
+                          <DataCell label="Пароль" className="data-actions">
+                            <form
+                              action={`/api/users/${item.id}/password`}
+                              method="post"
+                              className="password-reset-form"
+                            >
+                              <input
+                                name="password"
+                                type="password"
+                                minLength={8}
+                                placeholder="Новый пароль"
+                                aria-label={`Новый пароль для ${item.fullName}`}
+                                required
+                                autoComplete="new-password"
+                              />
+                              <button className="bg-panel">Сменить</button>
+                            </form>
+                          </DataCell>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </DataTable>
+                )}
+              </section>
+            ),
+          },
+        ]}
+      />
     </main>
   );
 }
