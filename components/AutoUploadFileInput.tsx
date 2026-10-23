@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Camera } from "lucide-react";
+import { ImagePlus, Paperclip } from "lucide-react";
 
 type AutoUploadFileInputProps = {
   action: string;
@@ -30,8 +30,17 @@ export function AutoUploadFileInput({
   }
 
   return (
-    <form ref={formRef} action={action} method="post" encType="multipart/form-data" className="panel space-y-3 p-4">
-      <h3 className="font-semibold">{title}</h3>
+    <form
+      ref={formRef}
+      action={action}
+      method="post"
+      encType="multipart/form-data"
+      className="panel space-y-3 p-4"
+    >
+      <div className="upload-heading">
+        <ImagePlus size={20} />
+        <h3 className="font-semibold">{title}</h3>
+      </div>
       <input
         ref={inputRef}
         name="file"
@@ -48,10 +57,12 @@ export function AutoUploadFileInput({
         disabled={uploading}
         className="w-full bg-panel"
       >
-        <Camera size={18} />
+        <Paperclip size={18} />
         {uploading ? "Загружается..." : "Выбрать файл"}
       </button>
-      {fileName && <p className="text-sm text-slate-600">{fileName}</p>}
+      {fileName && (
+        <p className="upload-filename text-sm text-slate-600">{fileName}</p>
+      )}
     </form>
   );
 }

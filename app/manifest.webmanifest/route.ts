@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 
 export function GET() {
   return NextResponse.json({
-    name: "СпецУчёт",
-    short_name: "СпецУчёт",
+    name: "Оборот спецодежды",
+    short_name: "Спецодежда",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",

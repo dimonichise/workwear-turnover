@@ -78,14 +78,40 @@ export function ScanBox({
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <h3 className="font-semibold">{label}</h3>
-        <button type="button" onClick={() => setCamera((v) => !v)} className="bg-panel" title="Камера">
+        <button
+          type="button"
+          onClick={() => setCamera((v) => !v)}
+          className="bg-panel"
+          title="Камера"
+          aria-label="Сканировать штрих-код камерой"
+          aria-pressed={camera}
+        >
           <Camera size={18} />
         </button>
       </div>
-      {camera && <video ref={videoRef} className="aspect-video w-full rounded-lg bg-black" muted playsInline />}
+      {camera && (
+        <video
+          ref={videoRef}
+          className="aspect-video w-full rounded-lg bg-black"
+          muted
+          playsInline
+        />
+      )}
       <div className="flex gap-2">
-        <input value={barcode} onChange={(e) => setBarcode(e.target.value)} placeholder="Штрих-код" inputMode="numeric" />
-        <button type="button" onClick={() => submit()} className="bg-brand text-white" title="Ввести вручную">
+        <input
+          value={barcode}
+          onChange={(e) => setBarcode(e.target.value)}
+          placeholder="Штрих-код"
+          aria-label="Штрих-код изделия"
+          inputMode="numeric"
+        />
+        <button
+          type="button"
+          onClick={() => submit()}
+          className="bg-brand text-white"
+          title="Ввести вручную"
+          aria-label="Добавить по штрих-коду"
+        >
           <Keyboard size={18} />
         </button>
       </div>

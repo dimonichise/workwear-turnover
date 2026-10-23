@@ -1,6 +1,20 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import { AlertTriangle, BarChart3, Box, ClipboardList, History, RotateCcw, Settings, Shirt, UserCheck, Users, WalletCards } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  ArrowUpRight,
+  BarChart3,
+  Box,
+  ClipboardList,
+  History,
+  RotateCcw,
+  Settings,
+  Shirt,
+  UserCheck,
+  Users,
+  WalletCards,
+} from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { money } from "@/lib/format";
@@ -38,7 +52,7 @@ export default async function HomePage() {
       : [])
   ] as const;
   const metrics: { label: string; value: string | number; icon: LucideIcon; iconClass: string; href: string }[] = [
-    { label: "Всего", value: total, icon: Box, iconClass: "icon-soft-teal", href: "/garments" },
+    { label: "Всего изделий", value: total, icon: Box, iconClass: "icon-soft-teal", href: "/garments" },
     { label: "У сотрудников", value: withEmployee, icon: UserCheck, iconClass: "icon-soft-green", href: "/garments?status=with_employee" },
     { label: "В стирке", value: inLaundry, icon: ClipboardList, iconClass: "icon-soft-blue", href: "/garments?status=in_laundry" },
     { label: "Задержка", value: delayedLaundry, icon: AlertTriangle, iconClass: "icon-soft-red", href: "/garments?filter=delayed" },
@@ -46,34 +60,73 @@ export default async function HomePage() {
   ];
 
   return (
-    <main className="shell space-y-7">
-      <section className="flex flex-wrap items-start justify-between gap-4">
+    <main className="shell dashboard-page">
+      <section className="page-heading">
         <div>
-          <h1 className="page-title">СТО {user.station?.name || "Все СТО"}</h1>
-          <p className="mt-1 text-sm text-slate-600">Рабочая панель контроля оборота спецодежды</p>
+          <p className="eyebrow">
+            {user.station ? `СТО ${user.station.name}` : "Все СТО"}
+          </p>
+          <h1 className="page-title">Обзор спецодежды</h1>
         </div>
-        <Link href="/laundry/new" className="button bg-brand text-white">
+        <Link href="/laundry/new" className="button button-primary">
           <ClipboardList size={18} />
           Новая стирка
         </Link>
       </section>
-      <section className="dashboard-metrics grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="dashboard-metrics" aria-label="Сводные показатели">
         {metrics.map(({ label, value, icon: Icon, iconClass, href }) => (
-          <Link key={label} href={href} className="metric-card" aria-label={`${label}: ${value}`}>
-            <span className={`metric-icon ${iconClass}`}>
-              <Icon size={20} />
-            </span>
-            <div className="mt-5 text-3xl font-bold tracking-tight">{value}</div>
-            <div className="mt-1 text-sm text-slate-600">{label}</div>
+          <Link
+            key={label}
+            href={href}
+            className="metric-card"
+            aria-label={`${label}: ${value}`}
+          >
+            <div className="metric-top">
+              <span className={`metric-icon ${iconClass}`}>
+                <Icon size={20} />
+              </span>
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </div>
+            <div className="metric-value">{value}</div>
+            <div className="metric-label">{label}</div>
           </Link>
         ))}
       </section>
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {links.map(([href, label, Icon]) => (
-          <Link key={href} href={href} className="action-card">
-            <Icon size={22} /> {label}
-          </Link>
-        ))}
+      <section className="dashboard-actions">
+        <div className="section-heading">
+          <h2>Работа со спецодеждой</h2>
+          <span>Операции и справочники</span>
+        </div>
+        <div className="action-grid">
+          {links.map(([href, label, Icon]) => (
+            <Link key={href} href={href} className="action-card">
+              <span className="action-icon">
+                <Icon size={22} />
+              </span>
+              <span>{label}</span>
+              <ArrowRight
+                className="action-arrow"
+                size={18}
+                aria-hidden="true"
+              />
+            </Link>
+          ))}
+        </div>
+      </section>
+      <section className="delay-summary" aria-label="Контроль сроков">
+        <span
+          className={`metric-icon ${delayedLaundry ? "icon-soft-red" : "icon-soft-teal"}`}
+        >
+          <AlertTriangle size={20} />
+        </span>
+        <div>
+          <h2>Контроль сроков стирки</h2>
+          <p>Задержка: в стирке 7 дней и больше</p>
+        </div>
+        <Link href="/garments?filter=delayed" className="text-link">
+          {delayedLaundry ? `Задержано: ${delayedLaundry}` : "Нет задержек"}
+          <ArrowRight size={16} aria-hidden="true" />
+        </Link>
       </section>
     </main>
   );
